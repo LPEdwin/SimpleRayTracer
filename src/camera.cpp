@@ -23,7 +23,7 @@ public:
 
     vec3 horizontal;
     vec3 vertical;
-    vec3 leftBottom;
+    vec3 topLeft;
 
 private:
     vec3 unitTargetDir;
@@ -63,18 +63,19 @@ public:
         unitVertical = unit_vector(cross(horizontal, -unitTargetDir));
         vertical = focusDistance * viewportHeight * unitVertical;
 
-        leftBottom = position + focusDistance * unitTargetDir - horizontal / 2.0 - vertical / 2.0;
+        topLeft = position + focusDistance * unitTargetDir - horizontal / 2.0 - vertical / 2.0;
 
         lensRadius = aperture / 2.0;
     }
 
-    // Get the ray for a pixel at (u, v) in normalized device coordinates (NDC)
+    // Get the ray for a pixel at (u, v) in normalized screen space coordinates 
     // where u and v are in the range [0, 1].
+    // and (0,0) corresponds to the top-left corner of the image.
     Ray get_ray(double u, double v) const
     {
         vec3 offset = lensRadius * random_in_unit_disk();
         vec3 originWithOffset = position + unitHorizontal * offset.x() + unitVertical * offset.y();
-        vec3 screenPoint = leftBottom + u * horizontal + v * vertical;
+        vec3 screenPoint = topLeft + u * horizontal + v * vertical;
         double time = (exposureStart == exposureEnd) ? exposureStart : random_double(exposureStart, exposureEnd);
         return Ray(originWithOffset, screenPoint - originWithOffset, time);
     }
