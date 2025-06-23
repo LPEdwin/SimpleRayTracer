@@ -31,7 +31,7 @@ struct Image
 };
 
 // Write a 24-bit BMP file (no compression)
-void writeImageToBMP(const Image &image, const std::string &filename)
+void WriteImageToBMP(const Image &image, const std::string &filename)
 {
     std::ofstream ofs(filename, std::ios::binary);
     if (!ofs)

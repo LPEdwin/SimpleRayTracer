@@ -71,12 +71,12 @@ public:
     // Get the ray for a pixel at (u, v) in normalized screen space coordinates
     // where u and v are in the range [0, 1].
     // and (0,0) corresponds to the top-left corner of the image.
-    Ray get_ray(double u, double v) const
+    Ray GetRay(double u, double v) const
     {
         vec3 offset = lensRadius * random_in_unit_disk();
         vec3 originWithOffset = position + unitHorizontal * offset.x() + unitVertical * offset.y();
         vec3 screenPoint = topLeft + u * horizontal + v * vertical;
-        double time = (exposureStart == exposureEnd) ? exposureStart : random_double(exposureStart, exposureEnd);
+        double time = (exposureStart == exposureEnd) ? exposureStart : RandomDouble(exposureStart, exposureEnd);
         return Ray(originWithOffset, screenPoint - originWithOffset, time);
     }
 };

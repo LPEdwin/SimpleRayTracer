@@ -7,10 +7,11 @@ struct Sphere
 {
     vec3 center;
     float radius;
+    
     Sphere() : center(), radius(1.0f) {}
     Sphere(vec3 c, float r) : center(c), radius(r) {}
 
-    bool intersect(const Ray &ray, float &t) const
+    bool Intersect(const Ray &ray, float &t) const
     {
         vec3 oc = ray.origin - center;
         float a = dot(ray.direction, ray.direction);

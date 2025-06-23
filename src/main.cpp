@@ -13,17 +13,17 @@
 using namespace std;
 using namespace std::numbers;
 
-void render(const Camera &camera, const Sphere &sphere, Image &image)
+void Render(const Camera &camera, const Sphere &sphere, Image &image)
 {
     const vec3 pixelDelta = vec3(1.0f / image.width, 1.0f / image.height, 0.0f);
     for (int y = 0; y < image.height; ++y)
     {
         for (int x = 0; x < image.width; ++x)
         {
-            Ray ray = camera.get_ray(x * pixelDelta.x(), pixelDelta.y() * (image.height - 1 - y));
+            Ray ray = camera.GetRay(x * pixelDelta.x(), pixelDelta.y() * (image.height - 1 - y));
             auto dir = unit_vector(ray.direction);
             float t = 0.0f;
-            if (sphere.intersect(Ray(camera.position, dir), t))
+            if (sphere.Intersect(Ray(camera.position, dir), t))
             {
                 image.pixels[y][x] = vec3(1.0f, 0.0f, 0.0f);
             }
@@ -42,12 +42,12 @@ int main()
     Sphere sphere(vec3(0, 0, 0), 1.0f);
     Image image(1280, 720);
 
-    render(camera, sphere, image);
+    Render(camera, sphere, image);
 
     try
     {
         auto filename = "output.bmp";
-        writeImageToBMP(image, filename);
+        WriteImageToBMP(image, filename);
         std::cout << "BMP saved to " << filename << "\n";
     }
     catch (const std::exception &e)

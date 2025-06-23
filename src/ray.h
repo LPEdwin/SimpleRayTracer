@@ -11,7 +11,7 @@ public:
     const vec3 direction;
     double const time;
 
-    point3 at(double t) const
+    point3 At(double t) const
     {
         return origin + t * direction;
     }
