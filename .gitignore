@@ -1,0 +1,64 @@
+# === General ===
+*.o
+*.obj
+*.so
+*.a
+*.lib
+*.dll
+*.exe
+*.out
+*.app
+*.log
+*.tmp
+*.pid
+*.cache
+*.swp
+
+# === CMake ===
+/build/
+/CMakeFiles/
+/CMakeCache.txt
+/cmake_install.cmake
+/Makefile
+/install_manifest.txt
+/compile_commands.json
+
+# === Visual Studio Code ===
+.vscode/
+*.code-workspace
+
+# === CLion / JetBrains ===
+.idea/
+cmake-build-*/
+*.iml
+
+# === Mac OS ===
+.DS_Store
+
+# === Windows ===
+Thumbs.db
+desktop.ini
+
+# === Testing / Coverage ===
+*.gcda
+*.gcno
+*.gcov
+*.lcov
+*.profraw
+*.profdata
+
+# === Backup / Auto-save files ===
+*~
+*.bak
+*.orig
+*.rej
+
+# === Conan / vcpkg (optional) ===
+.conan/
+vcpkg_installed/
+
+# === Ninja build ===
+.ninja_deps
+.ninja_log
+build.ninja
+rules.ninja
