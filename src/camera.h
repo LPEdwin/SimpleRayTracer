@@ -1,9 +1,9 @@
 #pragma once
 
 #include <numbers>
-#include "vec3.cpp"
-#include "ray.cpp"
-#include "random.cpp"
+#include "vec3.h"
+#include "ray.h"
+#include "random.h"
 
 using namespace std;
 using namespace std::numbers;
@@ -68,7 +68,7 @@ public:
         lensRadius = aperture / 2.0;
     }
 
-    // Get the ray for a pixel at (u, v) in normalized screen space coordinates 
+    // Get the ray for a pixel at (u, v) in normalized screen space coordinates
     // where u and v are in the range [0, 1].
     // and (0,0) corresponds to the top-left corner of the image.
     Ray get_ray(double u, double v) const

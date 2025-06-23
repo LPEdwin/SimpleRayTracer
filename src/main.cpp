@@ -5,10 +5,10 @@
 #include <vector>
 #include <numbers>
 
-#include "vec3.cpp"
-#include "image.cpp"
-#include "camera.cpp"
-#include "sphere.cpp"
+#include "vec3.h"
+#include "image.h"
+#include "camera.h"
+#include "sphere.h"
 
 using namespace std;
 using namespace std::numbers;
