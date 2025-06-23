@@ -20,8 +20,8 @@ void render(const Camera& camera, const Sphere& sphere, Image& image) {
             float aspectRatio = static_cast<float>(image.width) / image.height;
             float pixelNDCX = (x + 0.5f) / image.width;
             float pixelNDCY = (y + 0.5f) / image.height;
-            float pixelScreenX = (2.0f * pixelNDCX - 1.0f) * aspectRatio * tan(camera.fov * 0.5f * pi / 180.0f);
-            float pixelScreenY = (1.0f - 2.0f * pixelNDCY) * tan(camera.fov * 0.5f * pi / 180.0f);
+            float pixelScreenX = (2.0f * pixelNDCX - 1.0f) * aspectRatio * tan(camera.fovInDegree * 0.5f * pi / 180.0f);
+            float pixelScreenY = (1.0f - 2.0f * pixelNDCY) * tan(camera.fovInDegree * 0.5f * pi / 180.0f);
 
             vec3 rayDirection(pixelScreenX, pixelScreenY, -1);
             rayDirection = unit_vector(rayDirection); // Normalize the ray direction
@@ -39,7 +39,7 @@ void render(const Camera& camera, const Sphere& sphere, Image& image) {
 
 
 int main(){
-    Camera camera(vec3(0, 0, 5), vec3(0, 0, -1), 60.0f);
+    Camera camera(vec3(0, 0, 5), vec3(0, 0, -1), 60.0f, 16.0/9.0);
     Sphere sphere(vec3(0, 0, 0), 1.0f);
     Image image(800, 600);
 
