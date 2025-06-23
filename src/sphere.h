@@ -14,9 +14,9 @@ struct Sphere
     bool Intersect(const Ray &ray, float &t) const
     {
         Vector3 oc = ray.origin - center;
-        float a = dot(ray.direction, ray.direction);
-        float b = 2.0f * dot(oc, ray.direction);
-        float c = dot(oc, oc) - radius * radius;
+        float a = Dot(ray.direction, ray.direction);
+        float b = 2.0f * Dot(oc, ray.direction);
+        float c = Dot(oc, oc) - radius * radius;
         float discriminant = b * b - 4 * a * c;
         if (discriminant < 0)
         {

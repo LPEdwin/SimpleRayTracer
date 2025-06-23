@@ -53,14 +53,14 @@ public:
     {
 
         const double fovInRad = fovInDegree * (pi / 180.0);
-        unitTargetDir = unit_vector(target - position);
+        unitTargetDir = UniitVector(target - position);
 
         const double viewportHeight = 2.0 * std::tan(fovInRad / 2.0);
         const double viewportWidth = aspectRatio * viewportHeight;
 
-        unitHorizontal = unit_vector(cross(-unitTargetDir, cameraUp));
+        unitHorizontal = UniitVector(Cross(-unitTargetDir, cameraUp));
         horizontal = focusDistance * viewportWidth * unitHorizontal;
-        unitVertical = unit_vector(cross(horizontal, -unitTargetDir));
+        unitVertical = UniitVector(Cross(horizontal, -unitTargetDir));
         vertical = focusDistance * viewportHeight * unitVertical;
 
         topLeft = position + focusDistance * unitTargetDir - horizontal / 2.0 - vertical / 2.0;
@@ -73,7 +73,7 @@ public:
     // and (0,0) corresponds to the top-left corner of the image.
     Ray GetRay(double u, double v) const
     {
-        Vector3 offset = lensRadius * random_in_unit_disk();
+        Vector3 offset = lensRadius * RandomInUnitDisk();
         Vector3 originWithOffset = position + unitHorizontal * offset.x() + unitVertical * offset.y();
         Vector3 screenPoint = topLeft + u * horizontal + v * vertical;
         double time = (exposureStart == exposureEnd) ? exposureStart : RandomDouble(exposureStart, exposureEnd);

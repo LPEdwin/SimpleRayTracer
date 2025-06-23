@@ -21,7 +21,7 @@ void Render(const Camera &camera, const Sphere &sphere, Image &image)
         for (int x = 0; x < image.width; ++x)
         {
             Ray ray = camera.GetRay(x * pixelDelta.x(), pixelDelta.y() * (image.height - 1 - y));
-            auto dir = unit_vector(ray.direction);
+            auto dir = UniitVector(ray.direction);
             float t = 0.0f;
             if (sphere.Intersect(Ray(camera.position, dir), t))
             {
