@@ -1,7 +1,7 @@
 #pragma once
 
 #include <numbers>
-#include "vec3.h"
+#include "vector3.h"
 #include "ray.h"
 #include "random.h"
 
@@ -11,42 +11,42 @@ using namespace std::numbers;
 class Camera
 {
 public:
-    vec3 position;
-    vec3 target;
+    Vector3 position;
+    Vector3 target;
     double fovInDegree;
     double aspectRatio;
     double focusDistance;
     double aperture;
     double exposureStart;
     double exposureEnd;
-    vec3 cameraUp;
+    Vector3 cameraUp;
 
-    vec3 horizontal;
-    vec3 vertical;
-    vec3 topLeft;
+    Vector3 horizontal;
+    Vector3 vertical;
+    Vector3 topLeft;
 
 private:
-    vec3 unitTargetDir;
-    vec3 unitHorizontal;
-    vec3 unitVertical;
+    Vector3 unitTargetDir;
+    Vector3 unitHorizontal;
+    Vector3 unitVertical;
     double lensRadius = 0.0;
 
 public:
-    Camera() : Camera(vec3(0, 0, 0), vec3(0, 0, 1), 90.0, 16.0 / 9.0) {}
+    Camera() : Camera(Vector3(0, 0, 0), Vector3(0, 0, 1), 90.0, 16.0 / 9.0) {}
 
-    Camera(const vec3 &position, const vec3 &target, double fovInDegree, double aspectRatio)
-        : Camera(position, target, fovInDegree, aspectRatio, 1.0, 0.0, 0.0, 0.0, vec3(0, 1, 0)) {}
+    Camera(const Vector3 &position, const Vector3 &target, double fovInDegree, double aspectRatio)
+        : Camera(position, target, fovInDegree, aspectRatio, 1.0, 0.0, 0.0, 0.0, Vector3(0, 1, 0)) {}
 
-    Camera(const vec3 &position, const vec3 &target, double fovInDegree, double aspectRatio,
+    Camera(const Vector3 &position, const Vector3 &target, double fovInDegree, double aspectRatio,
            double focusDistance, double aperture)
-        : Camera(position, target, fovInDegree, aspectRatio, focusDistance, aperture, 0.0, 0.0, vec3(0, 1, 0)) {}
+        : Camera(position, target, fovInDegree, aspectRatio, focusDistance, aperture, 0.0, 0.0, Vector3(0, 1, 0)) {}
 
-    Camera(const vec3 &position, const vec3 &target, double fovInDegree, double aspectRatio,
+    Camera(const Vector3 &position, const Vector3 &target, double fovInDegree, double aspectRatio,
            double focusDistance, double aperture, double exposureStart)
-        : Camera(position, target, fovInDegree, aspectRatio, focusDistance, aperture, exposureStart, 0.0, vec3(0, 1, 0)) {}
+        : Camera(position, target, fovInDegree, aspectRatio, focusDistance, aperture, exposureStart, 0.0, Vector3(0, 1, 0)) {}
 
-    Camera(const vec3 &position, const vec3 &target, double fovInDegree, double aspectRatio,
-           double focusDistance, double aperture, double exposureStart, double exposureEnd, const vec3 &cameraUp)
+    Camera(const Vector3 &position, const Vector3 &target, double fovInDegree, double aspectRatio,
+           double focusDistance, double aperture, double exposureStart, double exposureEnd, const Vector3 &cameraUp)
         : position(position), target(target), fovInDegree(fovInDegree), aspectRatio(aspectRatio),
           focusDistance(focusDistance), aperture(aperture), exposureStart(exposureStart), exposureEnd(exposureEnd),
           cameraUp(cameraUp)
@@ -73,9 +73,9 @@ public:
     // and (0,0) corresponds to the top-left corner of the image.
     Ray GetRay(double u, double v) const
     {
-        vec3 offset = lensRadius * random_in_unit_disk();
-        vec3 originWithOffset = position + unitHorizontal * offset.x() + unitVertical * offset.y();
-        vec3 screenPoint = topLeft + u * horizontal + v * vertical;
+        Vector3 offset = lensRadius * random_in_unit_disk();
+        Vector3 originWithOffset = position + unitHorizontal * offset.x() + unitVertical * offset.y();
+        Vector3 screenPoint = topLeft + u * horizontal + v * vertical;
         double time = (exposureStart == exposureEnd) ? exposureStart : RandomDouble(exposureStart, exposureEnd);
         return Ray(originWithOffset, screenPoint - originWithOffset, time);
     }

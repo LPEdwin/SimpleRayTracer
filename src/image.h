@@ -4,19 +4,19 @@
 #include <cstdint>
 #include <vector>
 #include <iostream>
-#include "vec3.h"
+#include "vector3.h"
 
 struct Image
 {
     int width, height;
-    vec3 **pixels;
+    Vector3 **pixels;
 
     Image(int w, int h) : width(w), height(h)
     {
-        pixels = new vec3 *[height];
+        pixels = new Vector3 *[height];
         for (int i = 0; i < height; ++i)
         {
-            pixels[i] = new vec3[width];
+            pixels[i] = new Vector3[width];
         }
     }
 
