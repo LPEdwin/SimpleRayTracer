@@ -68,9 +68,9 @@ public:
 
     Ray get_ray(double u, double v) const {
         vec3 offset = lensRadius * random_in_unit_disk();
-        vec3 offsetPosition = position + unitHorizontal * offset.x() + unitVertical * offset.y();
+        vec3 originWithOffset = position + unitHorizontal * offset.x() + unitVertical * offset.y();
         vec3 screenPoint = leftBottom + u * horizontal + v * vertical;
         double time = (exposureStart == exposureEnd) ? exposureStart : random_double(exposureStart, exposureEnd);
-        return Ray(offsetPosition, screenPoint - offsetPosition, time);
+        return Ray(originWithOffset, screenPoint - originWithOffset, time);
     }
 };
