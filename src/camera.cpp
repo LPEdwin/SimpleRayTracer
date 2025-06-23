@@ -8,7 +8,8 @@
 using namespace std;
 using namespace std::numbers;
 
-class Camera {
+class Camera
+{
 public:
     vec3 position;
     vec3 target;
@@ -33,22 +34,23 @@ private:
 public:
     Camera() : Camera(vec3(0, 0, 0), vec3(0, 0, 1), 90.0, 16.0 / 9.0) {}
 
-    Camera(const vec3& position, const vec3& target, double fovInDegree, double aspectRatio)
+    Camera(const vec3 &position, const vec3 &target, double fovInDegree, double aspectRatio)
         : Camera(position, target, fovInDegree, aspectRatio, 1.0, 0.0, 0.0, 0.0, vec3(0, 1, 0)) {}
 
-    Camera(const vec3& position, const vec3& target, double fovInDegree, double aspectRatio,
+    Camera(const vec3 &position, const vec3 &target, double fovInDegree, double aspectRatio,
            double focusDistance, double aperture)
         : Camera(position, target, fovInDegree, aspectRatio, focusDistance, aperture, 0.0, 0.0, vec3(0, 1, 0)) {}
 
-    Camera(const vec3& position, const vec3& target, double fovInDegree, double aspectRatio,
+    Camera(const vec3 &position, const vec3 &target, double fovInDegree, double aspectRatio,
            double focusDistance, double aperture, double exposureStart)
         : Camera(position, target, fovInDegree, aspectRatio, focusDistance, aperture, exposureStart, 0.0, vec3(0, 1, 0)) {}
 
-    Camera(const vec3& position, const vec3& target, double fovInDegree, double aspectRatio,
-           double focusDistance, double aperture, double exposureStart, double exposureEnd, const vec3& cameraUp)
+    Camera(const vec3 &position, const vec3 &target, double fovInDegree, double aspectRatio,
+           double focusDistance, double aperture, double exposureStart, double exposureEnd, const vec3 &cameraUp)
         : position(position), target(target), fovInDegree(fovInDegree), aspectRatio(aspectRatio),
           focusDistance(focusDistance), aperture(aperture), exposureStart(exposureStart), exposureEnd(exposureEnd),
-          cameraUp(cameraUp) {
+          cameraUp(cameraUp)
+    {
 
         const double fovInRad = fovInDegree * (pi / 180.0);
         unitTargetDir = unit_vector(target - position);
@@ -68,7 +70,8 @@ public:
 
     // Get the ray for a pixel at (u, v) in normalized device coordinates (NDC)
     // where u and v are in the range [0, 1].
-    Ray get_ray(double u, double v) const {
+    Ray get_ray(double u, double v) const
+    {
         vec3 offset = lensRadius * random_in_unit_disk();
         vec3 originWithOffset = position + unitHorizontal * offset.x() + unitVertical * offset.y();
         vec3 screenPoint = leftBottom + u * horizontal + v * vertical;
