@@ -2,11 +2,17 @@
 
 #include "vec3.cpp"
 
-struct Ray
+class Ray
 {
-    vec3 origin;
-    vec3 direction;
-    double time;
+public:
+    Ray(const point3 &origin, const vec3 &direction, double time = 0.0) : origin(origin), direction(direction), time(time) {}
 
-    Ray(vec3 origin, vec3 direction, double time = 0.0) : origin(origin), direction(direction), time(time) {}
+    const point3 origin;
+    const vec3 direction;
+    double const time;
+
+    point3 at(double t) const
+    {
+        return origin + t * direction;
+    }
 };
