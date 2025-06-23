@@ -66,6 +66,8 @@ public:
         lensRadius = aperture / 2.0;
     }
 
+    // Get the ray for a pixel at (u, v) in normalized device coordinates (NDC)
+    // where u and v are in the range [0, 1].
     Ray get_ray(double u, double v) const {
         vec3 offset = lensRadius * random_in_unit_disk();
         vec3 originWithOffset = position + unitHorizontal * offset.x() + unitVertical * offset.y();
