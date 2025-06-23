@@ -11,6 +11,8 @@
 //==============================================================================================
 
 #include <cmath>
+#include <random.cpp>
+
 using namespace std;
 
 class vec3 {
@@ -59,13 +61,13 @@ class vec3 {
         return (std::fabs(e[0]) < s) && (std::fabs(e[1]) < s) && (std::fabs(e[2]) < s);
     }
 
-    // static vec3 random() {
-    //     return vec3(random_double(), random_double(), random_double());
-    // }
+    static vec3 random() {
+        return vec3(random_double(), random_double(), random_double());
+    }
 
-    // static vec3 random(double min, double max) {
-    //     return vec3(random_double(min,max), random_double(min,max), random_double(min,max));
-    // }
+    static vec3 random(double min, double max) {
+        return vec3(random_double(min,max), random_double(min,max), random_double(min,max));
+    }
 };
 
 // point3 is just an alias for vec3, but useful for geometric clarity in the code.
@@ -114,30 +116,30 @@ inline vec3 unit_vector(const vec3& v) {
     return v / v.length();
 }
 
-// inline vec3 random_in_unit_disk() {
-//     while (true) {
-//         auto p = vec3(random_double(-1,1), random_double(-1,1), 0);
-//         if (p.length_squared() < 1)
-//             return p;
-//     }
-// }
+inline vec3 random_in_unit_disk() {
+    while (true) {
+        auto p = vec3(random_double(-1,1), random_double(-1,1), 0);
+        if (p.length_squared() < 1)
+            return p;
+    }
+}
 
-// inline vec3 random_unit_vector() {
-//     while (true) {
-//         auto p = vec3::random(-1,1);
-//         auto lensq = p.length_squared();
-//         if (1e-160 < lensq && lensq <= 1.0)
-//             return p / sqrt(lensq);
-//     }
-// }
+inline vec3 random_unit_vector() {
+    while (true) {
+        auto p = vec3::random(-1,1);
+        auto lensq = p.length_squared();
+        if (1e-160 < lensq && lensq <= 1.0)
+            return p / sqrt(lensq);
+    }
+}
 
-// inline vec3 random_on_hemisphere(const vec3& normal) {
-//     vec3 on_unit_sphere = random_unit_vector();
-//     if (dot(on_unit_sphere, normal) > 0.0) // In the same hemisphere as the normal
-//         return on_unit_sphere;
-//     else
-//         return -on_unit_sphere;
-// }
+inline vec3 random_on_hemisphere(const vec3& normal) {
+    vec3 on_unit_sphere = random_unit_vector();
+    if (dot(on_unit_sphere, normal) > 0.0) // In the same hemisphere as the normal
+        return on_unit_sphere;
+    else
+        return -on_unit_sphere;
+}
 
 inline vec3 reflect(const vec3& v, const vec3& n) {
     return v - 2*dot(v,n)*n;
