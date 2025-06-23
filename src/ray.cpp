@@ -2,8 +2,11 @@
 
 #include "vec3.cpp"
 
-struct Ray {
+struct Ray
+{
     vec3 origin;
     vec3 direction;
-    Ray(vec3 o, vec3 d) : origin(o), direction(d) {}
+    double time;
+
+    Ray(vec3 origin, vec3 direction, double time = 0.0) : origin(origin), direction(direction), time(time) {}
 };
