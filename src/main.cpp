@@ -17,11 +17,13 @@ using namespace std::numbers;
 
 int main()
 {
-    Camera camera(Vector3(0, 0, 5), Vector3(0, 0, -1), 60.0f, 16.0 / 9.0);
-    Sphere sphere(Vector3(0, 0, 0), 1.0f);
+    Camera camera(Vector3(0, 0, -5), Vector3(0, 0, 1), 60.0f, 16.0 / 9.0);
+    Sphere s1(Vector3(-2.5, 2.0f, 3), 1.0f);
+    Sphere s2(Vector3(0, 0, 0), 1.0f);
+    vector<Sphere> spheres = {s1, s2};
     Image image(1280, 720);
 
-    Render(camera, sphere, image);
+    Render(camera, spheres, image);
 
     try
     {

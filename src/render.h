@@ -4,7 +4,7 @@
 #include "ray.h"
 #include "vector3.h"
 
-void Render(const Camera &camera, const Sphere &sphere, Image &image)
+void Render(const Camera &camera, const vector<Sphere> &spheres, Image &image)
 {
     const Vector3 pixelDelta = Vector3(1.0f / image.width, 1.0f / image.height, 0.0f);
 
@@ -15,7 +15,9 @@ void Render(const Camera &camera, const Sphere &sphere, Image &image)
             Ray ray = camera.GetRay(x * pixelDelta.x(), pixelDelta.y() * (image.height - 1 - y));
             auto dir = UnitVector(ray.direction);
             float t = 0.0f;
-            if (sphere.Intersect(Ray(camera.position, dir), t))
+            auto hit = std::any_of(spheres.begin(), spheres.end(), [&](const Sphere &sphere)
+                                   { return sphere.Intersect(ray, t); });
+            if (hit)
             {
                 image.pixels[y][x] = Vector3(1.0f, 0.0f, 0.0f);
             }
@@ -27,3 +29,8 @@ void Render(const Camera &camera, const Sphere &sphere, Image &image)
         }
     }
 };
+
+void Render(const Camera &camera, const Sphere &sphere, Image &image)
+{
+    Render(camera, vector<Sphere>{sphere}, image);
+}
