@@ -2,6 +2,7 @@
 
 #include "ray.h"
 #include "vector3.h"
+#include <cassert>
 
 class HitResult
 {
@@ -18,6 +19,8 @@ public:
     // outward_normal must be a unit vector.
     void set_face_normal(const Ray &ray, const Vector3 &outward_normal)
     {
+        assert(std::abs(outward_normal.Length() - 1.0) < 1e-6);
+        
         front_face = Dot(ray.direction, outward_normal) < 0;
         normal = front_face ? outward_normal : -outward_normal;
     }
