@@ -2,30 +2,39 @@
 
 #include "vector3.h"
 #include "ray.h"
+#include "hittable.h"
 
-struct Sphere
+struct Sphere : Hittable
 {
     Vector3 center;
-    float radius;
+    double radius;
 
     Sphere() : center(), radius(1.0f) {}
     Sphere(Vector3 c, float r) : center(c), radius(r) {}
 
-    bool Intersect(const Ray &ray, float &t) const
+    std::optional<HitResult> Hit(const Ray &ray, double t_min, double t_max) const override
     {
         Vector3 oc = center - ray.origin;
         float a = ray.direction.LengthSquared();
         float b = Dot(oc, ray.direction);
         float c = oc.LengthSquared() - radius * radius;
         float discriminant = b * b - a * c;
+
         if (discriminant < 0)
+            return std::nullopt;
+
+        auto sqrtd = std::sqrt(discriminant);
+
+        auto root = (b - sqrtd) / a;
+        if (root <= t_min || t_max <= root)
         {
-            return false;
+            root = (b + sqrtd) / a;
+            if (root <= t_min || t_max <= root)
+                return std::nullopt;
         }
-        else
-        {
-            t = (-b - sqrt(discriminant)) / a;
-            return true;
-        }
+
+        Point3 hit_point = ray.At(root);
+        Vector3 normal = (hit_point - center) / radius;
+        return HitResult(hit_point, normal, root);
     }
 };

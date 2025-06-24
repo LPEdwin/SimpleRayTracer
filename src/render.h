@@ -15,9 +15,19 @@ void Render(const Camera &camera, const vector<Sphere> &spheres, Image &image)
             Ray ray = camera.GetRay(x * pixelDelta.x(), pixelDelta.y() * (image.height - 1 - y));
             auto dir = UnitVector(ray.direction);
             float t = 0.0f;
-            auto hit = std::any_of(spheres.begin(), spheres.end(), [&](const Sphere &sphere)
-                                   { return sphere.Intersect(ray, t); });
-            if (hit)
+            std::optional<HitResult> hitResult{};
+            for (auto &sphere : spheres)
+            {
+                if (auto hit = sphere.Hit(ray, 0.0, 100.0))
+                {
+                    if (!hitResult || hit->t < hitResult->t)
+                    {
+                        hitResult = *hit;
+                    }
+                }
+            };
+
+            if (hitResult)
             {
                 image.pixels[y][x] = Vector3(1.0f, 0.0f, 0.0f);
             }
