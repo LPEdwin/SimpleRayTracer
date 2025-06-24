@@ -53,14 +53,14 @@ public:
     {
 
         const double fovInRad = fovInDegree * (pi / 180.0);
-        unitTargetDir = UniitVector(target - position);
+        unitTargetDir = UnitVector(target - position);
 
         const double viewportHeight = 2.0 * std::tan(fovInRad / 2.0);
         const double viewportWidth = aspectRatio * viewportHeight;
 
-        unitHorizontal = UniitVector(Cross(-unitTargetDir, cameraUp));
+        unitHorizontal = UnitVector(Cross(-unitTargetDir, cameraUp));
         horizontal = focusDistance * viewportWidth * unitHorizontal;
-        unitVertical = UniitVector(Cross(horizontal, -unitTargetDir));
+        unitVertical = UnitVector(Cross(horizontal, -unitTargetDir));
         vertical = focusDistance * viewportHeight * unitVertical;
 
         topLeft = position + focusDistance * unitTargetDir - horizontal / 2.0 - vertical / 2.0;
