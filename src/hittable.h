@@ -7,8 +7,18 @@ public:
     HitResult(const Point3 &point, const Vector3 &normal, double t) : point(point), normal(normal), t(t) {}
 
     Point3 point;
+    // Always points in opposite direction of the incident ray.
     Vector3 normal;
     double t;
+    // True if the ray is hitting the front face of the object.
+    bool front_face;
+
+    // outward_normal must be a unit vector.
+    void set_face_normal(const Ray &ray, const Vector3 &outward_normal)
+    {
+        front_face = Dot(ray.direction, outward_normal) < 0;
+        normal = front_face ? outward_normal : -outward_normal;
+    }
 };
 
 class Hittable

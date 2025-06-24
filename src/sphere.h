@@ -34,7 +34,9 @@ struct Sphere : Hittable
         }
 
         Point3 hit_point = ray.At(root);
-        Vector3 normal = (hit_point - center) / radius;
-        return HitResult(hit_point, normal, root);
+        Vector3 outward_normal = (hit_point - center) / radius;        
+        auto hit = HitResult(hit_point, outward_normal, root);
+        hit.set_face_normal(ray, outward_normal);
+        return hit;
     }
 };
