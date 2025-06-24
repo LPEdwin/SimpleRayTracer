@@ -1,3 +1,5 @@
+#pragma once
+
 #include "ray.h"
 #include "vector3.h"
 
