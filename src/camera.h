@@ -32,7 +32,7 @@ private:
     double lensRadius = 0.0;
 
 public:
-    Camera() : Camera(Vector3(0, 0, 0), Vector3(0, 0, 1), 90.0, 16.0 / 9.0) {}
+    Camera() : Camera(Vector3(0, 0, 0), Vector3(0, 0, -1), 90.0, 16.0 / 9.0) {}
 
     Camera(const Vector3 &position, const Vector3 &target, double fovInDegree, double aspectRatio)
         : Camera(position, target, fovInDegree, aspectRatio, 1.0, 0.0, 0.0, 0.0, Vector3(0, 1, 0)) {}
@@ -58,9 +58,9 @@ public:
         const double viewportHeight = 2.0 * std::tan(fovInRad / 2.0);
         const double viewportWidth = aspectRatio * viewportHeight;
 
-        unitHorizontal = UnitVector(Cross(-unitTargetDir, cameraUp));
+        unitHorizontal = UnitVector(Cross(cameraUp, -unitTargetDir));
         horizontal = focusDistance * viewportWidth * unitHorizontal;
-        unitVertical = UnitVector(Cross(horizontal, -unitTargetDir));
+        unitVertical = UnitVector(Cross(-unitTargetDir, unitHorizontal));
         vertical = focusDistance * viewportHeight * unitVertical;
 
         topLeft = position + focusDistance * unitTargetDir - horizontal / 2.0 - vertical / 2.0;

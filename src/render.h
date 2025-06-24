@@ -1,11 +1,15 @@
 #pragma once
 
+#include <limits>
+
 #include "camera.h"
 #include "sphere.h"
 #include "image.h"
 #include "ray.h"
 #include "vector3.h"
 #include "hittable.h"
+
+double inf = std::numeric_limits<double>::infinity();
 
 void Render(const Camera &camera, const Hittable &world, Image &image)
 {
@@ -18,9 +22,9 @@ void Render(const Camera &camera, const Hittable &world, Image &image)
             Ray ray = camera.GetRay(x * pixelDelta.x(), pixelDelta.y() * (image.height - 1 - y));
             auto dir = UnitVector(ray.direction);
 
-            if (auto hit = world.Hit(ray, 0.0, 100.0))
+            if (auto hit = world.Hit(ray, 0.0, inf))
             {
-                image.pixels[y][x] = Vector3(1.0f, 0.0f, 0.0f);
+                image.pixels[y][x] = 0.5 * (hit->normal + Color(1, 1, 1));
             }
             else
             {
