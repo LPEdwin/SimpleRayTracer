@@ -38,7 +38,7 @@ int main()
     try
     {
         auto filename = "output.bmp";
-        WriteImageToBMP(image, filename);
+        SaveBmp_sRGB(image, filename);
         std::cout << "BMP saved to " << filename << "\n";
     }
     catch (const std::exception &e)

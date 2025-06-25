@@ -30,8 +30,16 @@ struct Image
     }
 };
 
+inline double LinearTosRGB(double x)
+{
+    if (x <= 0.0031308)
+        return 12.92 * x;
+    else
+        return 1.055 * std::pow(x, 1.0 / 2.4) - 0.055;
+}
+
 // Write a 24-bit BMP file (no compression)
-void WriteImageToBMP(const Image &image, const std::string &filename)
+void SaveBmp(const Image &image, const std::string &filename, bool convertToSRGB = false)
 {
     std::ofstream ofs(filename, std::ios::binary);
     if (!ofs)
@@ -106,9 +114,9 @@ void WriteImageToBMP(const Image &image, const std::string &filename)
                 return static_cast<uint8_t>(c * 255.0f);
             };
 
-            uint8_t r = clamp(image.pixels[y][x].x());
-            uint8_t g = clamp(image.pixels[y][x].y());
-            uint8_t b = clamp(image.pixels[y][x].z());
+            uint8_t r = clamp(convertToSRGB ? LinearTosRGB(image.pixels[y][x].x()) : image.pixels[y][x].x());
+            uint8_t g = clamp(convertToSRGB ? LinearTosRGB(image.pixels[y][x].y()) : image.pixels[y][x].y());
+            uint8_t b = clamp(convertToSRGB ? LinearTosRGB(image.pixels[y][x].z()) : image.pixels[y][x].z());
 
             // BMP uses BGR order
             ofs.put(b);
@@ -124,4 +132,9 @@ void WriteImageToBMP(const Image &image, const std::string &filename)
     }
 
     ofs.close();
+}
+
+void SaveBmp_sRGB(const Image &image, const std::string &filename)
+{
+    SaveBmp(image, filename, true);
 }
