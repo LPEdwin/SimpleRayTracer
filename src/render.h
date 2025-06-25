@@ -18,8 +18,13 @@ Color GetColor(const Ray &ray, const Hittable &world, int depth = 50)
 
     if (auto hit = world.Hit(ray, 0.001, inf))
     {
-        auto r2 = hit->normal + RandomUnitVector();
-        return 0.5 * GetColor(Ray(hit->point, r2, ray.time), world, depth - 1);
+        Color attenuation;
+        Ray r2;
+        if (hit->material->Scatter(ray, *hit, attenuation, r2))
+            return attenuation * GetColor(r2, world, depth - 1);
+
+        // If the ray does not scatter, return black.
+        return Color(0, 0, 0);
     }
 
     auto dir = UnitVector(ray.direction);

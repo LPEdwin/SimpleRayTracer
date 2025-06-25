@@ -5,6 +5,7 @@
 class Ray
 {
 public:
+    Ray() : origin(Point3(0, 0, 0)), direction(Vector3(0, 0, 0)), time(0.0) {}
     Ray(const Point3 &origin, const Vector3 &direction, double time = 0.0) : origin(origin), direction(direction), time(time) {}
 
     Point3 origin;
