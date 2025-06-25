@@ -7,9 +7,9 @@ class Ray
 public:
     Ray(const Point3 &origin, const Vector3 &direction, double time = 0.0) : origin(origin), direction(direction), time(time) {}
 
-    const Point3 origin;
-    const Vector3 direction;
-    double const time;
+    Point3 origin;
+    Vector3 direction;
+    double time;
 
     Point3 At(double t) const
     {
