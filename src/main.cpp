@@ -8,6 +8,8 @@
 #include "vector3.h"
 #include "image.h"
 #include "camera.h"
+#include <chrono>
+
 #include "sphere.h"
 #include "render.h"
 #include "hittable_list.h"
@@ -25,7 +27,13 @@ int main()
 
     Image image(1280, 720);
 
+    auto start = std::chrono::high_resolution_clock::now();
+
     Render(camera, world, image);
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << ms.count() << "ms" << std::endl;
 
     try
     {
