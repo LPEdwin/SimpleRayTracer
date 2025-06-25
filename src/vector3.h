@@ -77,6 +77,11 @@ public:
     {
         return Vector3(RandomDouble(min, max), RandomDouble(min, max), RandomDouble(min, max));
     }
+
+    friend std::ostream &operator<<(std::ostream &os, const Vector3 &v)
+    {
+        return os << "(" << v.x() << ", " << v.y() << ", " << v.z() << ")";
+    }
 };
 
 // alias for common types
