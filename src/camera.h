@@ -10,8 +10,8 @@ using namespace std::numbers;
 
 class Camera
 {
-public:
-    Vector3 position;
+private:
+    Vector3 origin;
     Vector3 target;
     double fovInDegree;
     double aspectRatio;
@@ -21,49 +21,50 @@ public:
     double exposureEnd;
     Vector3 cameraUp;
 
-    Vector3 horizontal;
-    Vector3 vertical;
-    Vector3 topLeft;
-
-private:
     Vector3 unitTargetDir;
     Vector3 unitHorizontal;
+    // top to bottom
     Vector3 unitVertical;
+    Vector3 horizontal;
+    // top to bottom
+    Vector3 vertical;
+    Vector3 topLeft;
     double lensRadius = 0.0;
 
 public:
     Camera() : Camera(Vector3(0, 0, 0), Vector3(0, 0, -1), 90.0, 16.0 / 9.0) {}
 
-    Camera(const Vector3 &position, const Vector3 &target, double fovInDegree, double aspectRatio)
-        : Camera(position, target, fovInDegree, aspectRatio, 1.0, 0.0, 0.0, 0.0, Vector3(0, 1, 0)) {}
+    Camera(const Vector3 &origin, const Vector3 &target, double fovInDegree, double aspectRatio)
+        : Camera(origin, target, fovInDegree, aspectRatio, 1.0, 0.0, 0.0, 0.0, Vector3(0, 1, 0)) {}
 
-    Camera(const Vector3 &position, const Vector3 &target, double fovInDegree, double aspectRatio,
+    Camera(const Vector3 &origin, const Vector3 &target, double fovInDegree, double aspectRatio,
            double focusDistance, double aperture)
-        : Camera(position, target, fovInDegree, aspectRatio, focusDistance, aperture, 0.0, 0.0, Vector3(0, 1, 0)) {}
+        : Camera(origin, target, fovInDegree, aspectRatio, focusDistance, aperture, 0.0, 0.0, Vector3(0, 1, 0)) {}
 
-    Camera(const Vector3 &position, const Vector3 &target, double fovInDegree, double aspectRatio,
+    Camera(const Vector3 &origin, const Vector3 &target, double fovInDegree, double aspectRatio,
            double focusDistance, double aperture, double exposureStart)
-        : Camera(position, target, fovInDegree, aspectRatio, focusDistance, aperture, exposureStart, 0.0, Vector3(0, 1, 0)) {}
+        : Camera(origin, target, fovInDegree, aspectRatio, focusDistance, aperture, exposureStart, 0.0, Vector3(0, 1, 0)) {}
 
-    Camera(const Vector3 &position, const Vector3 &target, double fovInDegree, double aspectRatio,
+    Camera(const Vector3 &origin, const Vector3 &target, double fovInDegree, double aspectRatio,
            double focusDistance, double aperture, double exposureStart, double exposureEnd, const Vector3 &cameraUp)
-        : position(position), target(target), fovInDegree(fovInDegree), aspectRatio(aspectRatio),
+        : origin(origin), target(target), fovInDegree(fovInDegree), aspectRatio(aspectRatio),
           focusDistance(focusDistance), aperture(aperture), exposureStart(exposureStart), exposureEnd(exposureEnd),
           cameraUp(cameraUp)
     {
 
         const double fovInRad = fovInDegree * (pi / 180.0);
-        unitTargetDir = UnitVector(target - position);
-
         const double viewportHeight = 2.0 * std::tan(fovInRad / 2.0);
         const double viewportWidth = aspectRatio * viewportHeight;
 
+        unitTargetDir = UnitVector(target - origin);
         unitHorizontal = UnitVector(Cross(cameraUp, -unitTargetDir));
+        // top to bottom
+        unitVertical = UnitVector(Cross(unitTargetDir, unitHorizontal));
+
         horizontal = focusDistance * viewportWidth * unitHorizontal;
-        unitVertical = UnitVector(Cross(-unitTargetDir, unitHorizontal));
         vertical = focusDistance * viewportHeight * unitVertical;
 
-        topLeft = position + focusDistance * unitTargetDir - horizontal / 2.0 - vertical / 2.0;
+        topLeft = origin + focusDistance * unitTargetDir - horizontal / 2.0 - vertical / 2.0;
 
         lensRadius = aperture / 2.0;
     }
@@ -74,9 +75,9 @@ public:
     Ray GetRay(double u, double v) const
     {
         Vector3 offset = lensRadius * RandomInUnitDisk();
-        Vector3 originWithOffset = position + unitHorizontal * offset.x() + unitVertical * offset.y();
+        Vector3 newRayOrigin = origin + unitHorizontal * offset.x() + unitVertical * offset.y();
         Vector3 screenPoint = topLeft + u * horizontal + v * vertical;
         double time = (exposureStart == exposureEnd) ? exposureStart : RandomDouble(exposureStart, exposureEnd);
-        return Ray(originWithOffset, screenPoint - originWithOffset, time);
+        return Ray(newRayOrigin, screenPoint - newRayOrigin, time);
     }
 };
