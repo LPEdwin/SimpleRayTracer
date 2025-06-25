@@ -26,15 +26,16 @@ struct Sphere : Hittable
         auto sqrtd = std::sqrt(discriminant);
 
         auto root = (b - sqrtd) / a;
-        if (root <= t_min || t_max <= root)
+        if (root < t_min || t_max < root)
         {
             root = (b + sqrtd) / a;
-            if (root <= t_min || t_max <= root)
+            if (root < t_min || t_max < root)
                 return std::nullopt;
         }
 
         Point3 hit_point = ray.At(root);
-        Vector3 outward_normal = (hit_point - center) / radius;        
+        // Vector3 outward_normal = (hit_point - center) / radius;
+        Vector3 outward_normal = UnitVector(hit_point - center);
         auto hit = HitResult(hit_point, outward_normal, root);
         hit.set_face_normal(ray, outward_normal);
         return hit;
