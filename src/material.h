@@ -36,18 +36,20 @@ private:
 class Metal : public Material
 {
 public:
-    Metal(const Color &albedo) : albedo(albedo) {}
+    Metal(const Color &albedo, double fuzziness = 0.0) : albedo(albedo), fuzziness(fuzziness) {}
 
     bool Scatter(const Ray &ray_in, const HitResult &hit, Color &attenuation, Ray &ray_out) const override
     {
         auto reflected = Reflect(ray_in.direction, hit.normal);
+        reflected = UnitVector(reflected) + (fuzziness * RandomUnitVector());
         ray_out = Ray(hit.point, reflected);
         attenuation = albedo;
-        return true;
+        return (Dot(reflected, hit.normal) > 0);
     }
 
 private:
     Color albedo;
+    double fuzziness;
 };
 
 inline std::shared_ptr<Material> DefaultMaterial()
