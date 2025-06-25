@@ -18,7 +18,7 @@ Color GetColor(const Ray &ray, const Hittable &world, int depth = 50)
 
     if (auto hit = world.Hit(ray, 0.001, inf))
     {
-        auto r2 = RandomOnHemisphere(hit->normal);
+        auto r2 = hit->normal + RandomUnitVector();
         return 0.5 * GetColor(Ray(hit->point, r2, ray.time), world, depth - 1);
     }
 
