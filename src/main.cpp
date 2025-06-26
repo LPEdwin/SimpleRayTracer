@@ -22,7 +22,10 @@ using namespace std::numbers;
 int main()
 {
     auto scene = CreateFinalScene();
-    Image image(1280, 720);
+    auto height = 720;
+    auto width = static_cast<int>(height * scene.camera->aspectRatio);
+    cout << "Image size: " << width << "x" << height << "\n";
+    Image image(width, height);
 
     auto start = std::chrono::high_resolution_clock::now();
     Render(*scene.camera, *scene.objects, image);
