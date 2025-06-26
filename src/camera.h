@@ -10,7 +10,7 @@ using namespace std::numbers;
 
 class Camera
 {
-private:
+public:
     Vector3 origin;
     Vector3 target;
     double fovInDegree;
