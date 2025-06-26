@@ -16,11 +16,12 @@ Color GetColor(const Ray &ray, const Hittable &world, int depth = 50)
     if (depth <= 0)
         return Color(0, 0, 0);
 
-    if (auto hit = world.Hit(ray, 0.001, inf))
+    HitResult hit{};
+    if (world.Hit(ray, hit, 0.001, inf))
     {
         Color attenuation;
         Ray r2;
-        if (hit->material->Scatter(ray, *hit, attenuation, r2))
+        if (hit.material->Scatter(ray, hit, attenuation, r2))
             return attenuation * GetColor(r2, world, depth - 1);
 
         // If the ray does not scatter, return black.

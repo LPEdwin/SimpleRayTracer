@@ -2,7 +2,6 @@
 
 #include <cassert>
 #include <memory>
-#include <optional>
 
 #include "ray.h"
 #include "vector3.h"
@@ -12,6 +11,7 @@ class Material; // Forward declaration
 class HitResult
 {
 public:
+    HitResult() = default;
     HitResult(const Point3 &point, const Vector3 &normal, double t, std::shared_ptr<Material> material)
         : point(point), normal(normal), t(t), material(material) {}
 
@@ -38,5 +38,5 @@ class Hittable
 {
 public:
     virtual ~Hittable() = default;
-    virtual std::optional<HitResult> Hit(const Ray &ray, double t_min, double t_max) const = 0;
+    virtual bool Hit(const Ray &ray, HitResult &hitResult, double t_min, double t_max) const = 0;
 };

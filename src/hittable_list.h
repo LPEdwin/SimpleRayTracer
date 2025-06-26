@@ -25,22 +25,21 @@ public:
         shapes.push_back(object);
     }
 
-    optional<HitResult> Hit(const Ray &ray, double t_min, double t_max) const override
+    bool Hit(const Ray &ray, HitResult &hit, double t_min, double t_max) const override
     {
-        optional<HitResult> hit{};
         auto closest_so_far = t_max;
-
+        auto has_hit = false;
+        HitResult temp_hit;
         for (const auto &s : shapes)
         {
-            if (auto temp_hit = s->Hit(ray, t_min, closest_so_far))
+            if (s->Hit(ray, temp_hit, t_min, closest_so_far))
             {
-                closest_so_far = temp_hit->t;
-                hit = *temp_hit;
+                closest_so_far = temp_hit.t;
+                hit = temp_hit;
+                has_hit = true;
             }
         }
 
-        if (hit)
-            return hit;
-        return std::nullopt;
+        return has_hit;
     }
 };

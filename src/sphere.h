@@ -19,7 +19,7 @@ struct Sphere : Hittable
             throw std::invalid_argument("Material must not be null");
     }
 
-    std::optional<HitResult> Hit(const Ray &ray, double t_min, double t_max) const override
+    bool Hit(const Ray &ray, HitResult &hitResult, double t_min, double t_max) const override
     {
         Vector3 oc = center - ray.origin;
         double a = ray.direction.LengthSquared();
@@ -28,7 +28,7 @@ struct Sphere : Hittable
         double discriminant = b * b - a * c;
 
         if (discriminant < 0)
-            return std::nullopt;
+            return false;
 
         auto sqrtd = std::sqrt(discriminant);
 
@@ -37,14 +37,17 @@ struct Sphere : Hittable
         {
             root = (b + sqrtd) / a;
             if (root < t_min || t_max < root)
-                return std::nullopt;
+                return false;
         }
 
         Point3 hit_point = ray.At(root);
         // Vector3 outward_normal = (hit_point - center) / radius;
         Vector3 outward_normal = UnitVector(hit_point - center);
-        auto hit = HitResult(hit_point, outward_normal, root, material);
-        hit.set_face_normal(ray, outward_normal);
-        return hit;
+        hitResult.point = hit_point;
+        hitResult.normal = outward_normal;
+        hitResult.t = root;
+        hitResult.material = material;
+        hitResult.set_face_normal(ray, outward_normal);
+        return true;
     }
 };
