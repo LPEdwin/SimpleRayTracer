@@ -1,18 +1,15 @@
 $src = "src/main.cpp"
-$out = "build/main.exe"
+$buildDir = "build"
+$out = "$buildDir/main.exe"
 $include = "external"
-$output = "output.bmp"
+$output = "$buildDir/output.bmp"  # Output now in build directory
 
-# Create build directory
-if (-not (Test-Path build)) {
-    New-Item -ItemType Directory build | Out-Null
+# Clean build directory (more aggressive)
+if (Test-Path $buildDir) {
+    Remove-Item -Path $buildDir -Recurse -Force
+    Start-Sleep -Milliseconds 100  # Ensure filesystem sync
 }
-
-# Remove old output file and wait
-if (Test-Path $output) {
-    Remove-Item -Force $output
-    #Start-Sleep -Milliseconds 100  # Give filesystem time
-}
+New-Item -ItemType Directory $buildDir -Force | Out-Null
 
 # Compile
 Write-Host "Compiling..."
@@ -22,10 +19,14 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
-# Run
+# Run in build directory
 Write-Host "Running..."
-& ".\$out"
-if ($LASTEXITCODE -ne 0) {
+Push-Location $buildDir
+& ".\main.exe"
+$runExitCode = $LASTEXITCODE
+Pop-Location
+
+if ($runExitCode -ne 0) {
     Write-Error "Program execution failed"
     exit 1
 }
