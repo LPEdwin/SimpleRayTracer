@@ -1,10 +1,11 @@
-$src = "src/main.cpp"
-$buildDir = "build"
-$out = "$buildDir/main.exe"
-$include = "external"
-$output = "$buildDir/output.bmp"  # Output now in build directory
+param(
+    [ValidateSet("msvc", "msclang", "gcc")]
+    [string]$compiler = "gcc"
+)
 
-# Clean build directory (more aggressive)
+$buildDir = "build"
+
+# Clean build directory
 if (Test-Path $buildDir) {
     Remove-Item -Path $buildDir -Recurse -Force
     Start-Sleep -Milliseconds 100  # Ensure filesystem sync
@@ -12,9 +13,21 @@ if (Test-Path $buildDir) {
 New-Item -ItemType Directory $buildDir -Force | Out-Null
 
 # Compile
-Write-Host "Compiling..."
-#$compileResult = & g++ -O3 -march=native -std=c++23 -ltbb12 -fopenmp "-I$include" "$src" -o "$out" 2>&1
-$compileResult = g++ -std=c++23 -O3 -I"C:/msys64/ucrt64/include" -I"external" src/main.cpp -L"C:/msys64/ucrt64/lib" -ltbb12 -o build/main.exe
+switch ($compiler) {
+    "msvc" {
+        Write-Host "Compiling with MSVC..."
+        # Assumes running inside Developer Command Prompt with env set
+        $compileResult = cl /O2 /std:c++20 /utf-8 /EHsc /Iexternal src\main.cpp /Fe:build\main.exe
+    }
+    "msclang" {
+        Write-Host "Compiling with MS Clang..."
+        # clang-cl.exe should be in path if using Developer Command Prompt or VS Terminal        
+    }
+    "gcc" {
+        Write-Host "Compiling with GCC (MinGW)..."
+        $compileResult = g++ -std=c++23 -O3 -I"C:/msys64/ucrt64/include" -I"external" src/main.cpp -L"C:/msys64/ucrt64/lib" -ltbb12 -o build/main.exe
+    }
+}
 
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Compilation failed: $compileResult"
@@ -34,9 +47,10 @@ if ($runExitCode -ne 0) {
 }
 
 # Open output if it exists
-if (Test-Path $output) {
-    Start-Process $output
+$bmpFiles = Get-ChildItem -Path $buildDir -Filter *.bmp | Sort-Object Name
+if ($bmpFiles.Count -gt 0) {
+    Start-Process $bmpFiles[0].FullName
 }
 else {
-    Write-Warning "Output file $output was not created"
+    Write-Warning "No BMP file found in $buildDir"
 }

@@ -1,5 +1,11 @@
 #pragma once
 
+#define FMT_HEADER_ONLY
+#include "fmt/core.h"
+#include "fmt/chrono.h"
+#include "fmt/format.h"
+#include "fmt/printf.h"
+
 #include <limits>
 #include <execution>
 #include <algorithm>
@@ -7,7 +13,12 @@
 #include <ranges>
 #include <thread>
 
+#ifdef __GNUC__
 #include <tbb/tbb.h>
+#include <tbb/global_control.h>
+#else
+#include <ppl.h>
+#endif
 
 #include "camera.h"
 #include "sphere.h"
@@ -65,16 +76,48 @@ void RenderLine(Image &image, int samplesPerPixel, const Camera &camera, const V
     }
 }
 
-void Render(const Camera &camera, const Hittable &world, Image &image, int samplesPerPixel = 100)
+void Render(const Camera &camera, const Hittable &world, Image &image, int samplesPerPixel = 10)
 {
+    auto parallelismLimit = 0;
+    auto parallelismMax = std::thread::hardware_concurrency();
+
+#ifdef __GNUC__
+    if (parallelismLimit > 0)
+        tbb::global_control control(tbb::global_control::max_allowed_parallelism, parallelismLimit);
+#else
+    Concurrency::Scheduler *customScheduler = nullptr;
+    if (parallelismLimit > 0)
+    {
+        // Create custom scheduler with concurrency limit
+        Concurrency::SchedulerPolicy policy;
+        policy.SetConcurrencyLimits(parallelismLimit, parallelismLimit);
+        customScheduler = Concurrency::Scheduler::Create(policy);
+
+        // Attach custom scheduler to current context
+        customScheduler->Attach();
+    }
+#endif
+
+    fmt::println("Hardware concurrency: {}/{}", parallelismLimit == 0 ? parallelismMax : parallelismLimit, parallelismMax);
+
     const Vector3 pixelDelta = Vector3(1.0f / image.width, 1.0f / image.height, 0.0f);
 
-    auto lines = std::views::iota(0, image.height);
-    // std::for_each(std::execution::par, lines.begin(), lines.end(), [&](int y)
-    //               { RenderLine(image, samplesPerPixel, camera, pixelDelta, y, world); });
-
+#ifdef __GNUC__
+    // Use TBB parallel_for with GCC
     tbb::parallel_for(0, image.height, [&](int y)
                       { RenderLine(image, samplesPerPixel, camera, pixelDelta, y, world); });
+#else
+    // MSVC version using PPL's parallel_for
+    Concurrency::parallel_for(0, image.height, [&](int y)
+                              { RenderLine(image, samplesPerPixel, camera, pixelDelta, y, world); });
+
+    // Clean up custom scheduler if used
+    if (customScheduler)
+    {
+        concurrency::CurrentScheduler::Detach();
+        customScheduler->Release();
+    }
+#endif
 
     // ShowProgress(y + 1, image.height);
 }
