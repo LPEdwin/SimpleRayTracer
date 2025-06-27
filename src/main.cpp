@@ -1,3 +1,6 @@
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+
 #define FMT_HEADER_ONLY
 #include "fmt/core.h"
 #include "fmt/chrono.h"
@@ -11,6 +14,8 @@
 #include <vector>
 #include <numbers>
 #include <chrono>
+
+#include <tbb/global_control.h>
 
 #include "vector3.h"
 #include "image.h"
@@ -26,10 +31,15 @@ using namespace std::chrono;
 
 int main()
 {
+    auto threadLimit = 0;
+    if (threadLimit > 0)
+        tbb::global_control control(tbb::global_control::max_allowed_parallelism, threadLimit);
+    fmt::println("Hardware concurrency: %d/%d", threadLimit, std::thread::hardware_concurrency());
+
     auto scene = CreateFinalScene();
     auto height = 720;
     auto width = static_cast<int>(height * scene.camera->aspectRatio);
-    cout << "Image size: " << width << "x" << height << "\n";
+    fmt::print("Image size: %d x %d\n", width, height);
     Image image(width, height);
 
     auto start = steady_clock::now();

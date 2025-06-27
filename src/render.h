@@ -1,6 +1,13 @@
 #pragma once
 
 #include <limits>
+#include <execution>
+#include <algorithm>
+#include <iostream>
+#include <ranges>
+#include <thread>
+
+#include <tbb/tbb.h>
 
 #include "camera.h"
 #include "sphere.h"
@@ -34,24 +41,40 @@ Color GetColor(const Ray &ray, const Hittable &world, int depth = 50)
     return (1.0 - a) * Vector3(1.0, 1.0, 1.0) + a * Vector3(0.5, 0.7, 1.0);
 }
 
+void RenderLine(Image &image, int samplesPerPixel, const Camera &camera, const Vector3 &pixelDelta, int y, const Hittable &world)
+{
+    thread_local static bool printed = false;
+    if (!printed)
+    {
+        string tmp = fmt::format(" processing line {}\n", y);
+        std::cerr << "Thread " << std::this_thread::get_id() << tmp;
+        printed = true;
+    }
+
+    for (int x = 0; x < image.width; ++x)
+    {
+        Color color(0, 0, 0);
+        for (int s = 0; s < samplesPerPixel; ++s)
+        {
+            auto aaOffset = Vector3(RandomDouble() - 0.5, RandomDouble() - 0.5, 0.0);
+            Ray ray = camera.GetRay((x + aaOffset.x()) * pixelDelta.x(),
+                                    (y + aaOffset.y()) * pixelDelta.y());
+            color += GetColor(ray, world);
+        }
+        image.pixels[y][x] = color / samplesPerPixel;
+    }
+}
+
 void Render(const Camera &camera, const Hittable &world, Image &image, int samplesPerPixel = 100)
 {
     const Vector3 pixelDelta = Vector3(1.0f / image.width, 1.0f / image.height, 0.0f);
 
-    for (int y = 0; y < image.height; ++y)
-    {
-        for (int x = 0; x < image.width; ++x)
-        {
-            Color color(0, 0, 0);
-            for (int s = 0; s < samplesPerPixel; ++s)
-            {
-                auto aaOffset = Vector3(RandomDouble() - 0.5, RandomDouble() - 0.5, 0.0);
-                Ray ray = camera.GetRay((x + aaOffset.x()) * pixelDelta.x(),
-                                        (y + aaOffset.y()) * pixelDelta.y());
-                color += GetColor(ray, world);
-            }
-            image.pixels[y][x] = color / samplesPerPixel;
-        }
-        ShowProgress(y + 1, image.height);
-    }
+    auto lines = std::views::iota(0, image.height);
+    // std::for_each(std::execution::par, lines.begin(), lines.end(), [&](int y)
+    //               { RenderLine(image, samplesPerPixel, camera, pixelDelta, y, world); });
+
+    tbb::parallel_for(0, image.height, [&](int y)
+                      { RenderLine(image, samplesPerPixel, camera, pixelDelta, y, world); });
+
+    // ShowProgress(y + 1, image.height);
 }

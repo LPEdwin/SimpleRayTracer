@@ -13,7 +13,9 @@ New-Item -ItemType Directory $buildDir -Force | Out-Null
 
 # Compile
 Write-Host "Compiling..."
-$compileResult = & g++ -O3 -march=native -std=c++23 "-I$include" "$src" -o "$out" 2>&1
+#$compileResult = & g++ -O3 -march=native -std=c++23 -ltbb12 -fopenmp "-I$include" "$src" -o "$out" 2>&1
+$compileResult = g++ -std=c++23 -O3 -I"C:/msys64/ucrt64/include" -I"external" src/main.cpp -L"C:/msys64/ucrt64/lib" -ltbb12 -o build/main.exe
+
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Compilation failed: $compileResult"
     exit 1
