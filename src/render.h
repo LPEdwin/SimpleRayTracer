@@ -1,5 +1,10 @@
 #pragma once
 
+#define WIN32_LEAN_AND_MEAN
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
 #define FMT_HEADER_ONLY
 #include "fmt/core.h"
 #include "fmt/chrono.h"
@@ -13,11 +18,11 @@
 #include <ranges>
 #include <thread>
 
-#ifdef __GNUC__
+#if defined(PPL) && defined(_MSC_VER)
+#include <ppl.h>
+#else
 #include <tbb/tbb.h>
 #include <tbb/global_control.h>
-#else
-#include <ppl.h>
 #endif
 
 #include "camera.h"
@@ -54,14 +59,6 @@ Color GetColor(const Ray &ray, const Hittable &world, int depth = 50)
 
 void RenderLine(Image &image, int samplesPerPixel, const Camera &camera, const Vector3 &pixelDelta, int y, const Hittable &world)
 {
-    thread_local static bool printed = false;
-    if (!printed)
-    {
-        string tmp = fmt::format(" processing line {}\n", y);
-        std::cerr << "Thread " << std::this_thread::get_id() << tmp;
-        printed = true;
-    }
-
     for (int x = 0; x < image.width; ++x)
     {
         Color color(0, 0, 0);
@@ -76,15 +73,12 @@ void RenderLine(Image &image, int samplesPerPixel, const Camera &camera, const V
     }
 }
 
-void Render(const Camera &camera, const Hittable &world, Image &image, int samplesPerPixel = 10)
+void Render(const Camera &camera, const Hittable &world, Image &image, int samplesPerPixel = 100)
 {
     auto parallelismLimit = 0;
     auto parallelismMax = std::thread::hardware_concurrency();
 
-#ifdef __GNUC__
-    if (parallelismLimit > 0)
-        tbb::global_control control(tbb::global_control::max_allowed_parallelism, parallelismLimit);
-#else
+#if defined(PPL) && defined(_MSC_VER)
     Concurrency::Scheduler *customScheduler = nullptr;
     if (parallelismLimit > 0)
     {
@@ -96,27 +90,29 @@ void Render(const Camera &camera, const Hittable &world, Image &image, int sampl
         // Attach custom scheduler to current context
         customScheduler->Attach();
     }
+#else
+    if (parallelismLimit > 0)
+        tbb::global_control control(tbb::global_control::max_allowed_parallelism, parallelismLimit);
 #endif
 
     fmt::println("Hardware concurrency: {}/{}", parallelismLimit == 0 ? parallelismMax : parallelismLimit, parallelismMax);
 
     const Vector3 pixelDelta = Vector3(1.0f / image.width, 1.0f / image.height, 0.0f);
 
-#ifdef __GNUC__
-    // Use TBB parallel_for with GCC
-    tbb::parallel_for(0, image.height, [&](int y)
-                      { RenderLine(image, samplesPerPixel, camera, pixelDelta, y, world); });
-#else
+#if defined(PPL) && defined(_MSC_VER)
     // MSVC version using PPL's parallel_for
     Concurrency::parallel_for(0, image.height, [&](int y)
                               { RenderLine(image, samplesPerPixel, camera, pixelDelta, y, world); });
 
-    // Clean up custom scheduler if used
     if (customScheduler)
     {
         concurrency::CurrentScheduler::Detach();
         customScheduler->Release();
     }
+#else
+    // Use TBB parallel_for as default
+    tbb::parallel_for(0, image.height, [&](int y)
+                      { RenderLine(image, samplesPerPixel, camera, pixelDelta, y, world); });
 #endif
 
     // ShowProgress(y + 1, image.height);

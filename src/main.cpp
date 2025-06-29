@@ -1,5 +1,3 @@
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
 
 #define FMT_HEADER_ONLY
 #include "fmt/core.h"
@@ -32,7 +30,7 @@ int main()
     auto scene = CreateFinalScene();
     auto height = 720;
     auto width = static_cast<int>(height * scene.camera->aspectRatio);
-    fmt::print("Image size: %d x %d\n", width, height);
+    fmt::print("Image size: {} x {}\n", width, height);
     Image image(width, height);
 
     auto start = steady_clock::now();
