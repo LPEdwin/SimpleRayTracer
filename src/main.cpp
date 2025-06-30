@@ -34,11 +34,11 @@ int main()
     Image image(width, height);
 
     auto start = steady_clock::now();
+
     Render(*scene.camera, *scene.objects, image);
 
     auto end = steady_clock::now();
     auto duration = duration_cast<seconds>(end - start);
-
     fmt::println("Elapsed {:%H:%M:%S}", duration);
 
     try
