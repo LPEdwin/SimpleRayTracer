@@ -1,5 +1,7 @@
 #pragma once
 
+#include <random>
+
 #include "hittable.h"
 #include "hittable_list.h"
 #include "material.h"
