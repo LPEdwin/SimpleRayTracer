@@ -17,18 +17,18 @@ switch ($compiler) {
     "msvc" {
         Write-Host "Compiling with MSVC and TBB for X64..."
         # Assumes running inside Developer Command Prompt with env set
-        $compileResult = & cl /O2 /std:c++20 /utf-8 /EHsc /Iexternal /Iexternal/tbb/include src\main.cpp /Fe:build\main.exe /link /LIBPATH:"external\tbb\lib\intel64\vc14" tbb12.lib
-        Copy-Item "external\tbb\redist\tbb12.dll" "$buildDir"
+        $compileResult = & cl /O2 /std:c++20 /utf-8 /EHsc /Iexternal /I"external/oneapi-tbb-2022_1_0/include" src\main.cpp /Fe:build\main.exe /link /LIBPATH:"external/oneapi-tbb-2022_1_0\lib\intel64\vc14" tbb12.lib
+        Copy-Item "external/oneapi-tbb-2022_1_0\redist\intel64\vc14\tbb12.dll" "$buildDir"
     }
     "msvc-ppl" {
         Write-Host "Compiling with MSVC and PPL..."
         # Assumes running inside Developer Command Prompt with env set
-        $compileResult = & cl /DPPL /O2 /std:c++20 /utf-8 /EHsc /Iexternal src\main.cpp /Fe:build\main.exe
+        $compileResult = & cl /DPPL /O2 /std:c++20 /utf-8 /EHsc /I"external" src\main.cpp /Fe:build\main.exe
     }    
     "gcc" {
         Write-Host "Compiling with GCC (MinGW)..." 
-        #$compileResult = & g++ -std=c++23 -O3 -I"C:/msys64/ucrt64/include" -I"external" src/main.cpp -L"C:/msys64/ucrt64/lib" -ltbb12 -o build/main.exe
-        $compileResult = & g++ -std=c++23 -O3 -I"external" src/main.cpp -ltbb12 -o build/main.exe
+        $compileResult = & g++ -std=c++23 -O3 -I"external" -I"external/oneapi-tbb-2022_1_0/include" -L"external/oneapi-tbb-2022_1_0/lib/mingw-w64-ucrt-x86_64" src/main.cpp -ltbb12 -o build/main.exe
+        Copy-Item "external/oneapi-tbb-2022_1_0\redist\mingw-w64-ucrt-x86_64\libtbb12.dll" "$buildDir"
     }
 }
 
