@@ -18,7 +18,7 @@
 #include <ranges>
 #include <thread>
 
-#if defined(PPL) && defined(_MSC_VER)
+#ifdef PPL
 #include <ppl.h>
 #else
 #include <tbb/tbb.h>
@@ -87,7 +87,7 @@ void Render(const Camera &camera,
     auto parallelismMax = std::thread::hardware_concurrency();
     ProgressTracker progressTracker(image.height);
 
-#if defined(PPL) && defined(_MSC_VER)
+#ifdef PPL
     Concurrency::Scheduler *customScheduler = nullptr;
     if (parallelismLimit > 0)
     {
