@@ -31,7 +31,7 @@
 #include "ray.h"
 #include "vector3.h"
 #include "hittable.h"
-#include "progress.h"
+#include "progress_tracker.h"
 
 static const double inf = std::numeric_limits<double>::infinity();
 
@@ -57,7 +57,12 @@ Color GetColor(const Ray &ray, const Hittable &world, int depth = 50)
     return (1.0 - a) * Vector3(1.0, 1.0, 1.0) + a * Vector3(0.5, 0.7, 1.0);
 }
 
-void RenderLine(Image &image, int samplesPerPixel, const Camera &camera, const Vector3 &pixelDelta, int y, const Hittable &world)
+void RenderLine(Image &image,
+                int samplesPerPixel,
+                const Camera &camera,
+                const Vector3 &pixelDelta,
+                int y,
+                const Hittable &world)
 {
     for (int x = 0; x < image.width; ++x)
     {
@@ -73,10 +78,14 @@ void RenderLine(Image &image, int samplesPerPixel, const Camera &camera, const V
     }
 }
 
-void Render(const Camera &camera, const Hittable &world, Image &image, int samplesPerPixel = 100)
+void Render(const Camera &camera,
+            const Hittable &world,
+            Image &image,
+            int samplesPerPixel = 100)
 {
     auto parallelismLimit = 0;
     auto parallelismMax = std::thread::hardware_concurrency();
+    ProgressTracker progressTracker(image.height);
 
 #if defined(PPL) && defined(_MSC_VER)
     Concurrency::Scheduler *customScheduler = nullptr;
@@ -102,7 +111,8 @@ void Render(const Camera &camera, const Hittable &world, Image &image, int sampl
 #if defined(PPL) && defined(_MSC_VER)
     // MSVC version using PPL's parallel_for
     Concurrency::parallel_for(0, image.height, [&](int y)
-                              { RenderLine(image, samplesPerPixel, camera, pixelDelta, y, world); });
+                              { RenderLine(image, samplesPerPixel, camera, pixelDelta, y, world);
+                                progressTracker.IncrementLine(); });
 
     if (customScheduler)
     {
@@ -112,8 +122,7 @@ void Render(const Camera &camera, const Hittable &world, Image &image, int sampl
 #else
     // Use TBB parallel_for as default
     tbb::parallel_for(0, image.height, [&](int y)
-                      { RenderLine(image, samplesPerPixel, camera, pixelDelta, y, world); });
+                      { RenderLine(image, samplesPerPixel, camera, pixelDelta, y, world); 
+                        progressTracker.IncrementLine(); });
 #endif
-
-    // ShowProgress(y + 1, image.height);
 }
