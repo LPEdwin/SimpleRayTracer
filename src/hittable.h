@@ -5,6 +5,7 @@
 
 #include "ray.h"
 #include "vector3.h"
+#include "aabb.h"
 
 class Material; // Forward declaration
 
@@ -39,4 +40,5 @@ class Hittable
 public:
     virtual ~Hittable() = default;
     virtual bool Hit(const Ray &ray, HitResult &hitResult, double t_min, double t_max) const = 0;
+    virtual AABB BoundingBox() const = 0;
 };

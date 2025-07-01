@@ -16,13 +16,14 @@ public:
     vector<shared_ptr<Hittable>> shapes;
 
     HittableList() {}
-    HittableList(shared_ptr<Hittable> object) { add(object); }
+    HittableList(shared_ptr<Hittable> shape) { add(shape); }
 
     void clear() { shapes.clear(); }
 
-    void add(shared_ptr<Hittable> object)
+    void add(shared_ptr<Hittable> shape)
     {
-        shapes.push_back(object);
+        shapes.push_back(shape);
+        bbox = AABB(bbox, shape->BoundingBox());
     }
 
     bool Hit(const Ray &ray, HitResult &hit, double t_min, double t_max) const override
@@ -42,4 +43,9 @@ public:
 
         return has_hit;
     }
+
+    AABB BoundingBox() const override { return bbox; }
+
+private:
+    AABB bbox = AABB();
 };
