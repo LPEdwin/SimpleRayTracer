@@ -27,7 +27,7 @@ public:
     {
         int current = ++completed_lines;
 
-        if (current % 100 == 0 || current == total_lines)
+        if (current % 10 == 0 || current == total_lines)
         {
             ShowProgress(current, total_lines);
         }
@@ -39,7 +39,7 @@ public:
         auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - start_time).count();
 
         // Only update display every 100ms to avoid spam
-        if (now - last_update < std::chrono::milliseconds(10) && current != total)
+        if (now - last_update < std::chrono::milliseconds(100) && current != total)
         {
             return;
         }
