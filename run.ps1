@@ -1,6 +1,8 @@
 param(
-    [ValidateSet("msvc", "msvc-ppl", "gcc")]
-    [string]$compiler = "gcc"
+    [ValidateSet("msvc", "gcc")]
+    [string]$compiler = "gcc",
+
+    [switch]$PPL
 )
 
 $buildDir = "build"
@@ -14,38 +16,6 @@ New-Item -ItemType Directory -Path $buildDir -Force | Out-Null
 
 # Compile
 switch ($compiler) {
-    "msvc" {
-        Write-Host "Compiling with MSVC and TBB for X64..."
-        $compilerArgs = @(
-            "/O2"
-            "/std:c++20"
-            "/utf-8"
-            "/EHsc"
-            "/Iexternal"
-            "/Iexternal/oneapi-tbb-2022_1_0/include"
-            "src\\main.cpp"
-            "/Fe:$buildDir\\main.exe"
-            "/link"
-            "/LIBPATH:external/oneapi-tbb-2022_1_0/lib/intel64/vc14"
-            "tbb12.lib"
-        )
-        $compileResult = & cl @compilerArgs
-        Copy-Item "external/oneapi-tbb-2022_1_0/redist/intel64/vc14/tbb12.dll" "$buildDir"
-    }
-    "msvc-ppl" {
-        Write-Host "Compiling with MSVC and PPL..."
-        $compilerArgs = @(
-            "/DPPL"
-            "/O2"
-            "/std:c++20"
-            "/utf-8"
-            "/EHsc"
-            "/Iexternal"
-            "src\\main.cpp"
-            "/Fe:$buildDir\\main.exe"
-        )
-        $compileResult = & cl @compilerArgs
-    }
     "gcc" {
         Write-Host "Compiling with GCC (MinGW)..."
         $compilerArgs = @(
@@ -53,15 +23,40 @@ switch ($compiler) {
             "-O3"
             "-Iexternal"
             "-Iexternal/oneapi-tbb-2022_1_0/include"
-            "-Lexternal/oneapi-tbb-2022_1_0/lib/mingw-w64-ucrt-x86_64"
             "src/main.cpp"
-            "-ltbb12"
+            "-Lexternal/oneapi-tbb-2022_1_0/lib/mingw-w64-ucrt-x86_64"        
             "-o"
             "$buildDir/main.exe"
+            "-ltbb12"
         )
+
         $compileResult = & g++ @compilerArgs
         Copy-Item "external/oneapi-tbb-2022_1_0/redist/mingw-w64-ucrt-x86_64/libtbb12.dll" "$buildDir"
     }
+    "msvc" {
+        Write-Host "Compiling with MSVC and $(if ($PPL) { 'PPL' } else { 'TBB' })..."
+        $compilerArgs = @(
+            "/O2"
+            "/std:c++20"
+            "/utf-8"
+            "/EHsc"
+            "/Iexternal"       
+            $(if ($PPL) { "/DPPL" } else { "/Iexternal/oneapi-tbb-2022_1_0/include" })
+            "src/main.cpp"
+            "/Fe:$buildDir/main.exe"    
+        )          
+        if (!$PPL) {
+            $compilerArgs += @(
+                "/link"
+                "/LIBPATH:external/oneapi-tbb-2022_1_0/lib/intel64/vc14"
+                "tbb12.lib"
+            )
+        }
+        $compileResult = & cl @compilerArgs
+        if ( !$PPL ) {
+            Copy-Item "external/oneapi-tbb-2022_1_0/redist/intel64/vc14/tbb12.dll" "$buildDir"
+        }        
+    }  
 }
 
 if ($LASTEXITCODE -ne 0) {
@@ -92,7 +87,5 @@ try {
     }
 }
 finally {
-    if ((Get-Location).Path -ne (Resolve-Path ".").Path) {
-        Pop-Location
-    }
+    Pop-Location    
 }
