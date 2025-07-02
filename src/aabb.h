@@ -45,7 +45,7 @@ public:
         return x;
     }
 
-    bool Hit(const Ray &r, Interval ray_t) const
+    bool Hit(const Ray &r, double t_min, double t_max) const
     {
         const Point3 &ray_orig = r.origin;
         const Vector3 &ray_dir = r.direction;
@@ -60,20 +60,20 @@ public:
 
             if (t0 < t1)
             {
-                if (t0 > ray_t.min)
-                    ray_t.min = t0;
-                if (t1 < ray_t.max)
-                    ray_t.max = t1;
+                if (t0 > t_min)
+                    t_min = t0;
+                if (t1 < t_max)
+                    t_max = t1;
             }
             else
             {
-                if (t1 > ray_t.min)
-                    ray_t.min = t1;
-                if (t0 < ray_t.max)
-                    ray_t.max = t0;
+                if (t1 > t_min)
+                    t_min = t1;
+                if (t0 < t_max)
+                    t_max = t0;
             }
 
-            if (ray_t.max <= ray_t.min)
+            if (t_max <= t_min)
                 return false;
         }
         return true;
