@@ -21,6 +21,7 @@ switch ($compiler) {
         $compilerArgs = @(
             "-std=c++23"
             "-O3"
+            "-Isrc"
             "-Iexternal"
             "-Iexternal/oneapi-tbb-2022_1_0/include"
             "src/main.cpp"
@@ -40,6 +41,7 @@ switch ($compiler) {
             "/std:c++20"
             "/utf-8"
             "/EHsc"
+            "/Isrc"
             "/Iexternal"       
             $(if ($PPL) { "/DPPL" } else { "/Iexternal/oneapi-tbb-2022_1_0/include" })
             "src/main.cpp"

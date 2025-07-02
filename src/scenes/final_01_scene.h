@@ -2,18 +2,13 @@
 
 #include <random>
 
+#include "scenes/scene.h"
 #include "hittable.h"
 #include "hittable_list.h"
 #include "material.h"
 #include "sphere.h"
 #include "camera.h"
 #include "bvh_node.h"
-
-struct Scene
-{
-    shared_ptr<Hittable> objects;
-    shared_ptr<Camera> camera;
-};
 
 Scene CreateFinalScene()
 {

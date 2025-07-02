@@ -1,7 +1,8 @@
 #pragma once
 
-#include "../scene.h"
-#include "../quad.h"
+#include "scenes/scene.h"
+#include "bvh_node.h"
+#include "quad.h"
 
 Scene CreateQuadsScene()
 {
