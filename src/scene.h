@@ -7,6 +7,7 @@
 #include "material.h"
 #include "sphere.h"
 #include "camera.h"
+#include "bvh_node.h"
 
 struct Scene
 {
@@ -69,7 +70,7 @@ Scene CreateFinalScene()
     auto camera = make_shared<Camera>(Vector3(13, 2, 3), Vector3(0, 0, 0), 20.0, 16.0 / 9.0, 10.0, 0.1);
 
     return Scene{
-        .objects = make_shared<HittableList>(scene_objects),
+        .objects = make_shared<BvhNode>(scene_objects),
         .camera = camera};
 }
 
@@ -174,6 +175,6 @@ Scene CreateBenchmark01()
     auto camera = make_shared<Camera>(Vector3(13, 2, 3), Vector3(0, 0, 0), 20.0, 16.0 / 9.0, 10.0, 0.1);
 
     return Scene{
-        .objects = make_shared<HittableList>(scene_objects),
+        .objects = make_shared<BvhNode>(scene_objects),
         .camera = camera};
 }
