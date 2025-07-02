@@ -19,8 +19,9 @@
 #include "sphere.h"
 #include "render.h"
 #include "hittable_list.h"
-#include "scene.h"
 #include "bvh_node.h"
+#include "scenes/quads_scene.h"
+#include "scenes/final_01_scene.h"
 
 using namespace std;
 using namespace std::numbers;
@@ -28,7 +29,7 @@ using namespace std::chrono;
 
 int main()
 {
-    auto scene = CreateBenchmark01();
+    auto scene = CreateFinalScene();
     auto height = 720;
     auto width = static_cast<int>(height * scene.camera->aspectRatio);
     fmt::print("Image size: {} x {}\n", width, height);
