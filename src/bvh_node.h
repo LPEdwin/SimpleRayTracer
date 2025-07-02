@@ -21,6 +21,11 @@ class BvhNode : public Hittable
 {
 
 public:
+    static shared_ptr<BvhNode> Build(std::vector<shared_ptr<Hittable>> shapes)
+    {
+        return BuildRecursive(shapes, 0, shapes.size());
+    }
+
     static shared_ptr<BvhNode> Build(std::vector<shared_ptr<Hittable>> shapes, size_t start, size_t end)
     {
         // if shapes is a lvalue a copy is made, if it is an rvalue a move is made
