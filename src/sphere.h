@@ -59,7 +59,7 @@ public:
         hitResult.normal = outward_normal;
         hitResult.t = root;
         hitResult.material = material;
-        hitResult.set_face_normal(ray, outward_normal);
+        hitResult.SetFaceNormal(ray, outward_normal);
         return true;
     }
 };

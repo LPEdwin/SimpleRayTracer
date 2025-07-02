@@ -26,7 +26,7 @@ public:
     std::shared_ptr<Material> material;
 
     // outward_normal must be a unit vector.
-    void set_face_normal(const Ray &ray, const Vector3 &outward_normal)
+    void SetFaceNormal(const Ray &ray, const Vector3 &outward_normal)
     {
         assert(std::abs(outward_normal.Length() - 1.0) < 1e-6);
 

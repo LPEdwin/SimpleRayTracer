@@ -60,7 +60,7 @@ public:
         hit.t = t;
         hit.point = intersection;
         hit.material = mat;
-        hit.set_face_normal(ray, normal);
+        hit.SetFaceNormal(ray, normal);
 
         return true;
     }
