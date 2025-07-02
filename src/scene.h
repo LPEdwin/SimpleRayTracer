@@ -17,10 +17,10 @@ struct Scene
 
 Scene CreateFinalScene()
 {
-    HittableList scene_objects{};
+    vector<shared_ptr<Hittable>> scene_objects{};
 
     auto ground_material = make_shared<Lambertian>(Color(0.5, 0.5, 0.5));
-    scene_objects.add(make_shared<Sphere>(Point3(0, -1000, 0), 1000, ground_material));
+    scene_objects.push_back(make_shared<Sphere>(Point3(0, -1000, 0), 1000, ground_material));
 
     for (int a = -11; a < 11; a++)
     {
@@ -38,7 +38,7 @@ Scene CreateFinalScene()
                     // diffuse
                     auto albedo = Color::Random() * Color::Random();
                     sphere_material = make_shared<Lambertian>(albedo);
-                    scene_objects.add(make_shared<Sphere>(center, 0.2, sphere_material));
+                    scene_objects.push_back(make_shared<Sphere>(center, 0.2, sphere_material));
                 }
                 else if (choose_mat < 0.95)
                 {
@@ -46,41 +46,41 @@ Scene CreateFinalScene()
                     auto albedo = Color::Random(0.5, 1);
                     auto fuzz = RandomDouble(0, 0.5);
                     sphere_material = make_shared<Metal>(albedo, fuzz);
-                    scene_objects.add(make_shared<Sphere>(center, 0.2, sphere_material));
+                    scene_objects.push_back(make_shared<Sphere>(center, 0.2, sphere_material));
                 }
                 else
                 {
                     // glass
                     sphere_material = make_shared<Dielectric>(1.5);
-                    scene_objects.add(make_shared<Sphere>(center, 0.2, sphere_material));
+                    scene_objects.push_back(make_shared<Sphere>(center, 0.2, sphere_material));
                 }
             }
         }
     }
 
     auto material1 = make_shared<Dielectric>(1.5);
-    scene_objects.add(make_shared<Sphere>(Point3(0, 1, 0), 1.0, material1));
+    scene_objects.push_back(make_shared<Sphere>(Point3(0, 1, 0), 1.0, material1));
 
     auto material2 = make_shared<Lambertian>(Color(0.4, 0.2, 0.1));
-    scene_objects.add(make_shared<Sphere>(Point3(-4, 1, 0), 1.0, material2));
+    scene_objects.push_back(make_shared<Sphere>(Point3(-4, 1, 0), 1.0, material2));
 
     auto material3 = make_shared<Metal>(Color(0.7, 0.6, 0.5), 0.0);
-    scene_objects.add(make_shared<Sphere>(Point3(4, 1, 0), 1.0, material3));
+    scene_objects.push_back(make_shared<Sphere>(Point3(4, 1, 0), 1.0, material3));
 
     auto camera = make_shared<Camera>(Vector3(13, 2, 3), Vector3(0, 0, 0), 20.0, 16.0 / 9.0, 10.0, 0.1);
 
     return Scene{
-        .objects = make_shared<BvhNode>(scene_objects),
+        .objects = BvhNode::Build(scene_objects, 0, scene_objects.size()),
         .camera = camera};
 }
 
 // Create a benchmark scene with precomputed random values for reproducibility
 Scene CreateBenchmark01()
 {
-    HittableList scene_objects{};
+    vector<shared_ptr<Hittable>> scene_objects{};
 
     auto ground_material = make_shared<Lambertian>(Color(0.5, 0.5, 0.5));
-    scene_objects.add(make_shared<Sphere>(Point3(0, -1000, 0), 1000, ground_material));
+    scene_objects.push_back(make_shared<Sphere>(Point3(0, -1000, 0), 1000, ground_material));
 
     // Precomputed random values with fixed seed
     std::mt19937 rng(42);
@@ -142,7 +142,7 @@ Scene CreateBenchmark01()
                     Color albedo2(rnd.albedo2_r, rnd.albedo2_g, rnd.albedo2_b);
                     auto albedo = albedo1 * albedo2;
                     sphere_material = make_shared<Lambertian>(albedo);
-                    scene_objects.add(make_shared<Sphere>(center, 0.2, sphere_material));
+                    scene_objects.push_back(make_shared<Sphere>(center, 0.2, sphere_material));
                 }
                 else if (rnd.choose_mat < 0.95)
                 {
@@ -150,13 +150,13 @@ Scene CreateBenchmark01()
                     auto albedo = Color(rnd.albedo_r, rnd.albedo_g, rnd.albedo_b);
                     auto fuzz = rnd.metal_fuzz * 0.5; // Scale to [0, 0.5)
                     sphere_material = make_shared<Metal>(albedo, fuzz);
-                    scene_objects.add(make_shared<Sphere>(center, 0.2, sphere_material));
+                    scene_objects.push_back(make_shared<Sphere>(center, 0.2, sphere_material));
                 }
                 else
                 {
                     // Glass
                     sphere_material = make_shared<Dielectric>(1.5);
-                    scene_objects.add(make_shared<Sphere>(center, 0.2, sphere_material));
+                    scene_objects.push_back(make_shared<Sphere>(center, 0.2, sphere_material));
                 }
             }
         }
@@ -164,17 +164,17 @@ Scene CreateBenchmark01()
 
     // Rest remains identical (deterministic)
     auto material1 = make_shared<Dielectric>(1.5);
-    scene_objects.add(make_shared<Sphere>(Point3(0, 1, 0), 1.0, material1));
+    scene_objects.push_back(make_shared<Sphere>(Point3(0, 1, 0), 1.0, material1));
 
     auto material2 = make_shared<Lambertian>(Color(0.4, 0.2, 0.1));
-    scene_objects.add(make_shared<Sphere>(Point3(-4, 1, 0), 1.0, material2));
+    scene_objects.push_back(make_shared<Sphere>(Point3(-4, 1, 0), 1.0, material2));
 
     auto material3 = make_shared<Metal>(Color(0.7, 0.6, 0.5), 0.0);
-    scene_objects.add(make_shared<Sphere>(Point3(4, 1, 0), 1.0, material3));
+    scene_objects.push_back(make_shared<Sphere>(Point3(4, 1, 0), 1.0, material3));
 
     auto camera = make_shared<Camera>(Vector3(13, 2, 3), Vector3(0, 0, 0), 20.0, 16.0 / 9.0, 10.0, 0.1);
 
     return Scene{
-        .objects = make_shared<BvhNode>(scene_objects),
+        .objects = BvhNode::Build(scene_objects, 0, scene_objects.size()),
         .camera = camera};
 }

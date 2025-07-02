@@ -19,19 +19,25 @@
 // Bounding Volume Hierachy
 class BvhNode : public Hittable
 {
+
 public:
-    BvhNode(HittableList list) : BvhNode(list.shapes, 0, list.shapes.size())
+    static shared_ptr<BvhNode> Build(std::vector<shared_ptr<Hittable>> shapes, size_t start, size_t end)
     {
-        // There's a C++ subtlety here. This constructor (without span indices) creates an
-        // implicit copy of the hittable list, which we will modify. The lifetime of the copied
-        // list only extends until this constructor exits. That's OK, because we only need to
-        // persist the resulting bounding volume hierarchy.
+        // if shapes is a lvalue a copy is made, if it is an rvalue a move is made
+        return BuildRecursive(shapes, start, end);
     }
 
-    BvhNode(std::vector<shared_ptr<Hittable>> &shapes, size_t start, size_t end)
+private:
+    BvhNode(shared_ptr<Hittable> left, shared_ptr<Hittable> right, AABB bbox)
+        // standard pattern to avoid creating another copy of the parameters
+        : left(std::move(left)), right(std::move(right)), bbox(std::move(bbox))
+    {
+    }
+
+    static shared_ptr<BvhNode> BuildRecursive(std::vector<shared_ptr<Hittable>> &shapes, size_t start, size_t end)
     {
         // Build the bounding box of the span of source objects.
-        bbox = AABB::empty;
+        auto bbox = AABB::empty;
         for (size_t i = start; i < end; i++)
             bbox = AABB(bbox, shapes[i]->BoundingBox());
 
@@ -42,6 +48,8 @@ public:
                                         : BoxCompare_Z;
 
         size_t object_span = end - start;
+
+        shared_ptr<Hittable> left, right;
 
         if (object_span == 1)
         {
@@ -57,11 +65,13 @@ public:
             std::sort(std::begin(shapes) + start, std::begin(shapes) + end, comparator);
 
             auto mid = start + object_span / 2;
-            left = make_shared<BvhNode>(shapes, start, mid);
-            right = make_shared<BvhNode>(shapes, mid, end);
+            left = BuildRecursive(shapes, start, mid);
+            right = BuildRecursive(shapes, mid, end);
         }
+        return std::shared_ptr<BvhNode>(new BvhNode(left, right, bbox));
     }
 
+public:
     bool Hit(const Ray &ray, HitResult &hit, double t_min, double t_max) const override
     {
         if (!bbox.Hit(ray, t_min, t_max))
