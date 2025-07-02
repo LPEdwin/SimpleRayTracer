@@ -20,6 +20,7 @@
 #include "render.h"
 #include "hittable_list.h"
 #include "scene.h"
+#include "bvh_node.h"
 
 using namespace std;
 using namespace std::numbers;
@@ -27,7 +28,7 @@ using namespace std::chrono;
 
 int main()
 {
-    auto scene = CreateFinalScene();
+    auto scene = CreateBenchmark01();
     auto height = 720;
     auto width = static_cast<int>(height * scene.camera->aspectRatio);
     fmt::print("Image size: {} x {}\n", width, height);
