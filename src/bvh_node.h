@@ -41,12 +41,6 @@ private:
         for (size_t i = start; i < end; i++)
             bbox = AABB(bbox, shapes[i]->BoundingBox());
 
-        int axis = bbox.LongestAxis();
-
-        auto comparator = (axis == 0)   ? BoxCompare_X
-                          : (axis == 1) ? BoxCompare_Y
-                                        : BoxCompare_Z;
-
         size_t object_span = end - start;
 
         shared_ptr<Hittable> left, right;
@@ -62,7 +56,7 @@ private:
         }
         else
         {
-            std::sort(std::begin(shapes) + start, std::begin(shapes) + end, comparator);
+            std::sort(std::begin(shapes) + start, std::begin(shapes) + end, BoxCompare(bbox.LongestAxis()));
 
             auto mid = start + object_span / 2;
             left = BuildRecursive(shapes, start, mid);
@@ -90,25 +84,17 @@ private:
     shared_ptr<Hittable> right;
     AABB bbox;
 
-    static bool BoxCompare(const shared_ptr<Hittable> a, const shared_ptr<Hittable> b, int axis_index)
+    struct BoxCompare
     {
-        auto a_axis_interval = a->BoundingBox().AxisInterval(axis_index);
-        auto b_axis_interval = b->BoundingBox().AxisInterval(axis_index);
-        return a_axis_interval.min < b_axis_interval.min;
-    }
+        int index;
+        BoxCompare(int idx) : index(idx) {}
 
-    static bool BoxCompare_X(const shared_ptr<Hittable> a, const shared_ptr<Hittable> b)
-    {
-        return BoxCompare(a, b, 0);
-    }
-
-    static bool BoxCompare_Y(const shared_ptr<Hittable> a, const shared_ptr<Hittable> b)
-    {
-        return BoxCompare(a, b, 1);
-    }
-
-    static bool BoxCompare_Z(const shared_ptr<Hittable> a, const shared_ptr<Hittable> b)
-    {
-        return BoxCompare(a, b, 2);
-    }
+        // the object is now callable
+        bool operator()(const shared_ptr<Hittable> &a, const shared_ptr<Hittable> &b) const
+        {
+            auto a_axis_interval = a->BoundingBox().AxisInterval(index);
+            auto b_axis_interval = b->BoundingBox().AxisInterval(index);
+            return a_axis_interval.min < b_axis_interval.min;
+        }
+    };
 };
