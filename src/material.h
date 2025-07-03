@@ -19,7 +19,28 @@ class Material
 {
 public:
     virtual ~Material() = default;
-    virtual bool Scatter(const Ray &ray_in, const HitResult &hit, Color &attenuation, Ray &ray_out) const = 0;
+    virtual bool Scatter(const Ray &ray_in, const HitResult &hit, Color &attenuation, Ray &ray_out) const
+    {
+        return false;
+    }
+    virtual Color Emitted(const Point3 &point, double u, double v) const
+    {
+        return Color(0.0, 0.0, 0.0);
+    }
+};
+
+class Emissive : public Material
+{
+public:
+    Emissive(const Color &emission) : emission(emission) {}
+
+    virtual Color Emitted(const Point3 &point, double u, double v) const override
+    {
+        return emission;
+    }
+
+private:
+    Color emission;
 };
 
 // A material that reflects light diffusely preferred in normal directiron by following Lambert's cosine law.
