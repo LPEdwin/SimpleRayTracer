@@ -67,7 +67,7 @@ private:
             left = BuildRecursive(shapes, start, mid);
             right = BuildRecursive(shapes, mid, end);
         }
-        return std::shared_ptr<BvhNode>(new BvhNode(left, right, bbox));
+        return std::shared_ptr<BvhNode>(new BvhNode(left, right, bbox)); // can use make_shared because the constructor is private
     }
 
 public:
