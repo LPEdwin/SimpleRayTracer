@@ -72,103 +72,6 @@ public:
         return Transform(result);
     }
 
-    // Static factory methods for common transformations
-    static Transform Translate(double x, double y, double z)
-    {
-        std::array<std::array<double, 4>, 4> matrix = {{{{1.0, 0.0, 0.0, x}},
-                                                        {{0.0, 1.0, 0.0, y}},
-                                                        {{0.0, 0.0, 1.0, z}},
-                                                        {{0.0, 0.0, 0.0, 1.0}}}};
-        return Transform(matrix);
-    }
-
-    static Transform Translate(const Vector3 &offset)
-    {
-        return Translate(offset.x(), offset.y(), offset.z());
-    }
-
-    static Transform Scale(double sx, double sy, double sz)
-    {
-        std::array<std::array<double, 4>, 4> matrix = {{{{sx, 0.0, 0.0, 0.0}},
-                                                        {{0.0, sy, 0.0, 0.0}},
-                                                        {{0.0, 0.0, sz, 0.0}},
-                                                        {{0.0, 0.0, 0.0, 1.0}}}};
-        return Transform(matrix);
-    }
-
-    static Transform Scale(double s)
-    {
-        return Scale(s, s, s);
-    }
-
-    static Transform RotateX(double angle)
-    {
-        double c = std::cos(angle);
-        double s = std::sin(angle);
-        std::array<std::array<double, 4>, 4> matrix = {{{{1.0, 0.0, 0.0, 0.0}},
-                                                        {{0.0, c, -s, 0.0}},
-                                                        {{0.0, s, c, 0.0}},
-                                                        {{0.0, 0.0, 0.0, 1.0}}}};
-        return Transform(matrix);
-    }
-
-    static Transform RotateDegX(double angle)
-    {
-        return RotateX(angle * DegToRad);
-    }
-
-    static Transform RotateY(double angle)
-    {
-        double c = std::cos(angle);
-        double s = std::sin(angle);
-        std::array<std::array<double, 4>, 4> matrix = {{{{c, 0.0, s, 0.0}},
-                                                        {{0.0, 1.0, 0.0, 0.0}},
-                                                        {{-s, 0.0, c, 0.0}},
-                                                        {{0.0, 0.0, 0.0, 1.0}}}};
-        return Transform(matrix);
-    }
-
-    static Transform RotateDegY(double angle)
-    {
-        return RotateY(angle * DegToRad);
-    }
-
-    static Transform RotateZ(double angle)
-    {
-        double c = std::cos(angle);
-        double s = std::sin(angle);
-        std::array<std::array<double, 4>, 4> matrix = {{{{c, -s, 0.0, 0.0}},
-                                                        {{s, c, 0.0, 0.0}},
-                                                        {{0.0, 0.0, 1.0, 0.0}},
-                                                        {{0.0, 0.0, 0.0, 1.0}}}};
-        return Transform(matrix);
-    }
-
-    static Transform RotateDegZ(double angle)
-    {
-        return RotateZ(angle * DegToRad);
-    }
-
-    // Rotate around arbitrary axis
-    static Transform Rotate(double angle, const Vector3 &axis)
-    {
-        Vector3 a = UnitVector(axis);
-        double c = std::cos(angle);
-        double s = std::sin(angle);
-        double t = 1.0 - c;
-
-        std::array<std::array<double, 4>, 4> matrix = {{{{t * a.x() * a.x() + c, t * a.x() * a.y() - s * a.z(), t * a.x() * a.z() + s * a.y(), 0.0}},
-                                                        {{t * a.x() * a.y() + s * a.z(), t * a.y() * a.y() + c, t * a.y() * a.z() - s * a.x(), 0.0}},
-                                                        {{t * a.x() * a.z() - s * a.y(), t * a.y() * a.z() + s * a.x(), t * a.z() * a.z() + c, 0.0}},
-                                                        {{0.0, 0.0, 0.0, 1.0}}}};
-        return Transform(matrix);
-    }
-
-    static Transform RotateDeg(double angle, const Vector3 &axis)
-    {
-        return Rotate(angle * DegToRad, axis);
-    }
-
     // Get the inverse transform (simplified - assumes only translation, rotation, uniform scale)
     Transform Inverse() const
     {
@@ -187,6 +90,146 @@ public:
                                                             {{0.0, 0.0, 0.0, 1.0}}}};
 
         return Transform(inv_matrix);
+    }
+
+    Transform Translate(double x, double y, double z) const
+    {
+        return *this * Transform::FromTranslate(x, y, z);
+    }
+
+    Transform Translate(const Vector3 &offset) const
+    {
+        return *this * Transform::FromTranslate(offset);
+    }
+
+    Transform RotateRadY(double angle) const
+    {
+        return *this * Transform::FromRotateRadY(angle);
+    }
+
+    Transform RotateRadX(double angle) const
+    {
+        return *this * Transform::FromRotateRadX(angle);
+    }
+
+    Transform RotateRadZ(double angle) const
+    {
+        return *this * Transform::FromRotateZ(angle);
+    }
+
+    Transform RotateX(double degrees) const
+    {
+        return *this * Transform::FromRotateX(degrees);
+    }
+
+    Transform RotateY(double degrees) const
+    {
+        return *this * Transform::FromRotateY(degrees);
+    }
+
+    Transform RotateZ(double degrees) const
+    {
+        return *this * Transform::FromRotateZ(degrees);
+    }
+
+    Transform Scale(double s) const
+    {
+        return *this * Transform::FromScale(s);
+    }
+
+    // Static factory methods for common transformations
+    static Transform FromTranslate(double x, double y, double z)
+    {
+        std::array<std::array<double, 4>, 4> matrix = {{{{1.0, 0.0, 0.0, x}},
+                                                        {{0.0, 1.0, 0.0, y}},
+                                                        {{0.0, 0.0, 1.0, z}},
+                                                        {{0.0, 0.0, 0.0, 1.0}}}};
+        return Transform(matrix);
+    }
+
+    static Transform FromTranslate(const Vector3 &offset)
+    {
+        return FromTranslate(offset.x(), offset.y(), offset.z());
+    }
+
+    // Uniform scaling
+    // Note: Non-uniform scaling would require to fully implement
+    // the inverse transpose for normal transformation to work correctly.
+    static Transform FromScale(double s)
+    {
+        std::array<std::array<double, 4>, 4> matrix = {{{{s, 0.0, 0.0, 0.0}},
+                                                        {{0.0, s, 0.0, 0.0}},
+                                                        {{0.0, 0.0, s, 0.0}},
+                                                        {{0.0, 0.0, 0.0, 1.0}}}};
+        return Transform(matrix);
+    }
+
+    static Transform FromRotateRadX(double angle)
+    {
+        double c = std::cos(angle);
+        double s = std::sin(angle);
+        std::array<std::array<double, 4>, 4> matrix = {{{{1.0, 0.0, 0.0, 0.0}},
+                                                        {{0.0, c, -s, 0.0}},
+                                                        {{0.0, s, c, 0.0}},
+                                                        {{0.0, 0.0, 0.0, 1.0}}}};
+        return Transform(matrix);
+    }
+
+    static Transform FromRotateX(double angle)
+    {
+        return FromRotateRadX(angle * DegToRad);
+    }
+
+    static Transform FromRotateRadY(double angle)
+    {
+        double c = std::cos(angle);
+        double s = std::sin(angle);
+        std::array<std::array<double, 4>, 4> matrix = {{{{c, 0.0, s, 0.0}},
+                                                        {{0.0, 1.0, 0.0, 0.0}},
+                                                        {{-s, 0.0, c, 0.0}},
+                                                        {{0.0, 0.0, 0.0, 1.0}}}};
+        return Transform(matrix);
+    }
+
+    static Transform FromRotateY(double angle)
+    {
+        return FromRotateRadY(angle * DegToRad);
+    }
+
+    static Transform FromRotateRadZ(double angle)
+    {
+        double c = std::cos(angle);
+        double s = std::sin(angle);
+        std::array<std::array<double, 4>, 4> matrix = {{{{c, -s, 0.0, 0.0}},
+                                                        {{s, c, 0.0, 0.0}},
+                                                        {{0.0, 0.0, 1.0, 0.0}},
+                                                        {{0.0, 0.0, 0.0, 1.0}}}};
+        return Transform(matrix);
+    }
+
+    static Transform FromRotateZ(double angle)
+    {
+        return FromRotateRadZ(angle * DegToRad);
+    }
+
+    // Rotate around arbitrary axis
+    static Transform FromRotateRad(double angle, const Vector3 &axis)
+    {
+        Vector3 a = UnitVector(axis);
+        double c = std::cos(angle);
+        double s = std::sin(angle);
+        double t = 1.0 - c;
+
+        std::array<std::array<double, 4>, 4> matrix = {{{{t * a.x() * a.x() + c, t * a.x() * a.y() - s * a.z(), t * a.x() * a.z() + s * a.y(), 0.0}},
+                                                        {{t * a.x() * a.y() + s * a.z(), t * a.y() * a.y() + c, t * a.y() * a.z() - s * a.x(), 0.0}},
+                                                        {{t * a.x() * a.z() - s * a.y(), t * a.y() * a.z() + s * a.x(), t * a.z() * a.z() + c, 0.0}},
+                                                        {{0.0, 0.0, 0.0, 1.0}}}};
+        return Transform(matrix);
+    }
+
+    static Transform FromRotate(double angle, const Vector3 &axis)
+    {
+        return FromRotateRad(angle * DegToRad, axis);
     }
 
     // Access matrix elements
