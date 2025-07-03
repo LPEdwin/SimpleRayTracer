@@ -1,8 +1,11 @@
 #pragma once
 
 #include <array>
+#include <numbers>
 
 #include "vector3.h"
+
+constexpr double DegToRad = std::numbers::pi / 180.0;
 
 class Transform
 {
@@ -109,6 +112,11 @@ public:
         return Transform(matrix);
     }
 
+    static Transform RotateDegX(double angle)
+    {
+        return RotateX(angle * DegToRad);
+    }
+
     static Transform RotateY(double angle)
     {
         double c = std::cos(angle);
@@ -120,6 +128,11 @@ public:
         return Transform(matrix);
     }
 
+    static Transform RotateDegY(double angle)
+    {
+        return RotateY(angle * DegToRad);
+    }
+
     static Transform RotateZ(double angle)
     {
         double c = std::cos(angle);
@@ -129,6 +142,11 @@ public:
                                                         {{0.0, 0.0, 1.0, 0.0}},
                                                         {{0.0, 0.0, 0.0, 1.0}}}};
         return Transform(matrix);
+    }
+
+    static Transform RotateDegZ(double angle)
+    {
+        return RotateZ(angle * DegToRad);
     }
 
     // Rotate around arbitrary axis
@@ -144,6 +162,11 @@ public:
                                                         {{t * a.x() * a.z() - s * a.y(), t * a.y() * a.z() + s * a.x(), t * a.z() * a.z() + c, 0.0}},
                                                         {{0.0, 0.0, 0.0, 1.0}}}};
         return Transform(matrix);
+    }
+
+    static Transform RotateDeg(double angle, const Vector3 &axis)
+    {
+        return Rotate(angle * DegToRad, axis);
     }
 
     // Get the inverse transform (simplified - assumes only translation, rotation, uniform scale)
