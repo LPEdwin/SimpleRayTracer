@@ -11,6 +11,10 @@ using namespace std::numbers;
 class Camera
 {
 public:
+    double AspectRatio() const { return aspectRatio; }
+    double Fov() const { return fovInDegree; }
+
+private:
     Vector3 origin;
     Vector3 target;
     double fovInDegree;
