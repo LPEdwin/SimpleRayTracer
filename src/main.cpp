@@ -20,8 +20,10 @@
 #include "render.h"
 #include "hittable_list.h"
 #include "bvh_node.h"
+#include "scenes/scene.h"
 #include "scenes/quads_scene.h"
 #include "scenes/final_01_scene.h"
+#include "scenes/cornell_box.h"
 
 using namespace std;
 using namespace std::numbers;
@@ -29,15 +31,15 @@ using namespace std::chrono;
 
 int main()
 {
-    auto scene = CreateFinalScene();
+    auto scene = CreateCornellBox();
     auto height = 720;
-    auto width = static_cast<int>(height * scene.camera->aspectRatio);
+    auto width = static_cast<int>(height * scene.camera->AspectRatio());
     fmt::print("Image size: {} x {}\n", width, height);
     Image image(width, height);
 
     auto start = steady_clock::now();
 
-    Render(*scene.camera, *scene.objects, image);
+    Render(*scene.camera, *scene.objects, image, scene.backgroundFunc);
 
     auto end = steady_clock::now();
     auto duration = duration_cast<seconds>(end - start);
