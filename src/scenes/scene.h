@@ -2,9 +2,11 @@
 
 #include "hittable.h"
 #include "camera.h"
+#include "render.h"
 
 struct Scene
 {
-    shared_ptr<Hittable> objects;
-    shared_ptr<Camera> camera;
+    std::shared_ptr<Hittable> objects;
+    std::shared_ptr<Camera> camera;
+    BackgroundFunc backgroundFunc = BlackBackground;
 };

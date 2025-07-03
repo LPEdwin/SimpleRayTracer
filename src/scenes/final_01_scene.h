@@ -66,7 +66,8 @@ Scene CreateFinalScene()
 
     return Scene{
         .objects = BvhNode::Build(scene_objects, 0, scene_objects.size()),
-        .camera = camera};
+        .camera = camera,
+        .backgroundFunc = GradientBackground};
 }
 
 // Create a benchmark scene with precomputed random values for reproducibility
@@ -171,5 +172,6 @@ Scene CreateBenchmark01()
 
     return Scene{
         .objects = BvhNode::Build(scene_objects, 0, scene_objects.size()),
-        .camera = camera};
+        .camera = camera,
+        .backgroundFunc = GradientBackground};
 }
