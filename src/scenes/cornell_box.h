@@ -7,6 +7,9 @@
 #include "scenes/scene.h"
 #include "bvh_node.h"
 #include "vector3.h"
+#include <box.h>
+#include <transform.h>
+#include <instance.h>
 
 Scene CreateCornellBox()
 {
@@ -23,6 +26,14 @@ Scene CreateCornellBox()
     world.push_back(make_shared<Quad>(Point3(0, 0, 0), Vector3(555, 0, 0), Vector3(0, 0, 555), white));
     world.push_back(make_shared<Quad>(Point3(555, 555, 555), Vector3(-555, 0, 0), Vector3(0, 0, -555), white));
     world.push_back(make_shared<Quad>(Point3(0, 0, 555), Vector3(555, 0, 0), Vector3(0, 555, 0), white));
+
+    shared_ptr<Hittable> box1 = CreateBox(Point3(0, 0, 0), Point3(165, 330, 165), white);
+    box1 = make_shared<Instance>(box1, Transform::FromTranslate(265, 0, 295).RotateY(15));
+    world.push_back(box1);
+
+    shared_ptr<Hittable> box2 = CreateBox(Point3(0, 0, 0), Point3(165, 165, 165), white);
+    box2 = make_shared<Instance>(box2, Transform::FromTranslate(130, 0, 65).RotateY(-18));
+    world.push_back(box2);
 
     Camera cam(Vector3(278, 278, -800), Vector3(278, 278, 0), 40.0, 1.0);
     return Scene{BvhNode::Build(world), make_shared<Camera>(cam)};
