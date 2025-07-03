@@ -35,7 +35,21 @@
 
 static const double inf = std::numeric_limits<double>::infinity();
 
-Color GetColor(const Ray &ray, const Hittable &world, int depth = 50)
+using BackgroundFunc = std::function<Color(const Ray &)>;
+
+Color BlackBackground(const Ray &ray)
+{
+    return Color(0, 0, 0);
+}
+
+Color GradientBackground(const Ray &ray)
+{
+    auto dir = UnitVector(ray.direction);
+    auto t = 0.5 * (dir.y() + 1.0);
+    return (1.0 - t) * Color(1.0, 1.0, 1.0) + t * Color(0.5, 0.7, 1.0);
+}
+
+Color GetColor(const Ray &ray, const Hittable &world, BackgroundFunc backgroundFunc = BlackBackground, int depth = 50)
 {
     if (depth <= 0)
         return Color(0, 0, 0);
@@ -46,15 +60,12 @@ Color GetColor(const Ray &ray, const Hittable &world, int depth = 50)
         Color attenuation;
         Ray r2;
         if (hit.material->Scatter(ray, hit, attenuation, r2))
-            return attenuation * GetColor(r2, world, depth - 1);
+            return attenuation * GetColor(r2, world, backgroundFunc, depth - 1) + hit.material->Emitted(hit.point, 0, 0);
 
         // If the ray does not scatter, return black.
-        return Color(0, 0, 0);
+        return hit.material->Emitted(hit.point, 0, 0);
     }
-
-    auto dir = UnitVector(ray.direction);
-    auto a = 0.5 * (dir.y() + 1.0);
-    return (1.0 - a) * Vector3(1.0, 1.0, 1.0) + a * Vector3(0.5, 0.7, 1.0);
+    return backgroundFunc(ray);
 }
 
 void RenderLine(Image &image,
@@ -62,7 +73,8 @@ void RenderLine(Image &image,
                 const Camera &camera,
                 const Vector3 &pixelDelta,
                 int y,
-                const Hittable &world)
+                const Hittable &world,
+                BackgroundFunc backgroundFunc = BlackBackground)
 {
     for (int x = 0; x < image.width; ++x)
     {
@@ -72,7 +84,7 @@ void RenderLine(Image &image,
             auto aaOffset = Vector3(RandomDouble() - 0.5, RandomDouble() - 0.5, 0.0);
             Ray ray = camera.GetRay((x + aaOffset.x()) * pixelDelta.x(),
                                     (y + aaOffset.y()) * pixelDelta.y());
-            color += GetColor(ray, world);
+            color += GetColor(ray, world, backgroundFunc);
         }
         image.pixels[y][x] = color / samplesPerPixel;
     }
@@ -81,6 +93,7 @@ void RenderLine(Image &image,
 void Render(const Camera &camera,
             const Hittable &world,
             Image &image,
+            BackgroundFunc backgroundFunc = BlackBackground,
             int samplesPerPixel = 100)
 {
     auto parallelismLimit = 0;
@@ -111,7 +124,7 @@ void Render(const Camera &camera,
 #if defined(PPL) && defined(_MSC_VER)
     // MSVC version using PPL's parallel_for
     Concurrency::parallel_for(0, image.height, [&](int y)
-                              { RenderLine(image, samplesPerPixel, camera, pixelDelta, y, world);
+                              { RenderLine(image, samplesPerPixel, camera, pixelDelta, y, world, backgroundFunc);
                                 progressTracker.IncrementLine(); });
 
     if (customScheduler)
@@ -122,7 +135,7 @@ void Render(const Camera &camera,
 #else
     // Use TBB parallel_for as default
     tbb::parallel_for(0, image.height, [&](int y)
-                      { RenderLine(image, samplesPerPixel, camera, pixelDelta, y, world); 
+                      { RenderLine(image, samplesPerPixel, camera, pixelDelta, y, world, backgroundFunc); 
                         progressTracker.IncrementLine(); });
 #endif
 }
