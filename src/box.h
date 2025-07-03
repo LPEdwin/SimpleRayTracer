@@ -5,7 +5,7 @@
 #include "hittable_list.h"
 #include "quad.h"
 
-inline shared_ptr<HittableList> Box(const Point3 &a, const Point3 &b, shared_ptr<Material> mat)
+inline shared_ptr<HittableList> CreateBox(const Point3 &a, const Point3 &b, shared_ptr<Material> mat)
 {
     // Returns the 3D box (six sides) that contains the two opposite vertices a & b.
 
