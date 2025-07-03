@@ -24,6 +24,7 @@
 #include "scenes/quads_scene.h"
 #include "scenes/final_01_scene.h"
 #include "scenes/cornell_box.h"
+#include "scenes/final_02_scene.h"
 
 using namespace std;
 using namespace std::numbers;
@@ -31,7 +32,7 @@ using namespace std::chrono;
 
 int main()
 {
-    auto scene = CreateCornellBox();
+    auto scene = CreateFinal02Scene();
     auto height = 720;
     auto width = static_cast<int>(height * scene.camera->AspectRatio());
     fmt::print("Image size: {} x {}\n", width, height);
