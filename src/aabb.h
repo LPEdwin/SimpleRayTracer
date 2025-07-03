@@ -3,6 +3,7 @@
 #include "interval.h"
 #include "vector3.h"
 #include "ray.h"
+#include "transform.h"
 
 class AABB
 {
@@ -86,6 +87,34 @@ public:
             return x.Length() > z.Length() ? 0 : 2;
         else
             return y.Length() > z.Length() ? 1 : 2;
+    }
+
+    static AABB Transformed(const AABB &box, const Transform &transform)
+    {
+        std::array<Point3, 8> corners = {
+            Point3(box.x.min, box.y.min, box.z.min),
+            Point3(box.x.min, box.y.min, box.z.max),
+            Point3(box.x.min, box.y.max, box.z.min),
+            Point3(box.x.min, box.y.max, box.z.max),
+            Point3(box.x.max, box.y.min, box.z.min),
+            Point3(box.x.max, box.y.min, box.z.max),
+            Point3(box.x.max, box.y.max, box.z.min),
+            Point3(box.x.max, box.y.max, box.z.max)};
+
+        Point3 p = transform * corners[0];
+        Interval new_x(p.x(), p.x());
+        Interval new_y(p.y(), p.y());
+        Interval new_z(p.z(), p.z());
+
+        for (int i = 1; i < 8; ++i)
+        {
+            p = transform * corners[i];
+            new_x = Interval(new_x, Interval(p.x(), p.x()));
+            new_y = Interval(new_y, Interval(p.y(), p.y()));
+            new_z = Interval(new_z, Interval(p.z(), p.z()));
+        }
+
+        return AABB(new_x, new_y, new_z);
     }
 
     static const AABB empty, universe;
