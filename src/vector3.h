@@ -73,6 +73,20 @@ public:
         return Vector3(RandomDouble(), RandomDouble(), RandomDouble());
     }
 
+    static Vector3 Min(const Vector3 &u, const Vector3 &v)
+    {
+        return Vector3(std::fmin(u.e[0], v.e[0]),
+                       std::fmin(u.e[1], v.e[1]),
+                       std::fmin(u.e[2], v.e[2]));
+    }
+
+    static Vector3 Max(const Vector3 &u, const Vector3 &v)
+    {
+        return Vector3(std::fmax(u.e[0], v.e[0]),
+                       std::fmax(u.e[1], v.e[1]),
+                       std::fmax(u.e[2], v.e[2]));
+    }
+
     static Vector3 Random(double min, double max)
     {
         return Vector3(RandomDouble(min, max), RandomDouble(min, max), RandomDouble(min, max));
