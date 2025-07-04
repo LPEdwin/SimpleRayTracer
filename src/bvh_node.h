@@ -23,12 +23,19 @@ class BvhNode : public Hittable
 public:
     static shared_ptr<BvhNode> Build(std::vector<shared_ptr<Hittable>> shapes)
     {
+        if (shapes.empty())
+        {
+            throw std::runtime_error("BvhNode::Build: cannot build BVH from empty shape list.");
+        }
         return BuildRecursive(shapes, 0, shapes.size());
     }
 
     static shared_ptr<BvhNode> Build(std::vector<shared_ptr<Hittable>> shapes, size_t start, size_t end)
     {
-        // if shapes is a lvalue a copy is made, if it is an rvalue a move is made
+        if (start >= end)
+        {
+            throw std::runtime_error("BvhNode::Build: invalid span (start >= end).");
+        }
         return BuildRecursive(shapes, start, end);
     }
 
