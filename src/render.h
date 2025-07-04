@@ -113,8 +113,10 @@ void Render(const Camera &camera,
         customScheduler->Attach();
     }
 #else
+    // needs to stay in scope until TBB parallel_for is done
+    std::unique_ptr<tbb::global_control> control;
     if (parallelismLimit > 0)
-        tbb::global_control control(tbb::global_control::max_allowed_parallelism, parallelismLimit);
+        control = std::make_unique<tbb::global_control>(tbb::global_control::max_allowed_parallelism, parallelismLimit);
 #endif
 
     fmt::println("Hardware concurrency: {}/{}", parallelismLimit == 0 ? parallelismMax : parallelismLimit, parallelismMax);
