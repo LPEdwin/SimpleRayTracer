@@ -32,7 +32,7 @@
 #include "core/vector3.h"
 #include "core/hittable.h"
 #include "io/progress_tracker.h"
-#include "render.h"
+#include "core/environment_map.h"
 
 class Renderer
 {
@@ -40,11 +40,13 @@ public:
     int MaxDepth = 50;
     int SamplesPerPixel = 100;
     unsigned int MaxThreadCount = 0;
-    BackgroundFunc BackgroundFunc = BlackBackground;
+    shared_ptr<EnvironmentMap> EnvironmentMap = nullptr;
 
 private:
     Color GetColor(const Ray &ray, const Hittable &world, int currentDepth) const
     {
+        constexpr double inf = std::numeric_limits<double>::infinity();
+
         if (currentDepth <= 0)
             return Color(0, 0, 0);
 
@@ -58,7 +60,7 @@ private:
 
             return hit.material->Emitted(hit.point, 0, 0);
         }
-        return BackgroundFunc(ray);
+        return EnvironmentMap ? EnvironmentMap->GetColor(ray) : Color(0, 0, 0);
     }
 
     void RenderLine(Image &image,
