@@ -42,10 +42,10 @@ int main()
 
     auto start = steady_clock::now();
     Renderer renderer{
-        .MaxDepth = 50,
-        .SamplesPerPixel = 100,
-        .MaxThreadCount = 0,
-        .EnvironmentMap = scene.environmentMap};
+        .maxDepth = 50,
+        .samplesPerPixel = 100,
+        .maxThreadCount = 0,
+        .environmentMap = scene.environmentMap};
     renderer.Render(image, *scene.camera, *scene.objects);
 
     auto end = steady_clock::now();

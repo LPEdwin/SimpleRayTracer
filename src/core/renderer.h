@@ -37,10 +37,10 @@
 class Renderer
 {
 public:
-    int MaxDepth = 50;
-    int SamplesPerPixel = 100;
-    unsigned int MaxThreadCount = 0;
-    shared_ptr<EnvironmentMap> EnvironmentMap = nullptr;
+    int maxDepth = 50;
+    int samplesPerPixel = 100;
+    unsigned int maxThreadCount = 0;
+    shared_ptr<EnvironmentMap> environmentMap = nullptr;
 
 private:
     Color GetColor(const Ray &ray, const Hittable &world, int currentDepth) const
@@ -60,7 +60,7 @@ private:
 
             return hit.material->Emitted(hit.point, 0, 0);
         }
-        return EnvironmentMap ? EnvironmentMap->GetColor(ray) : Color(0, 0, 0);
+        return environmentMap ? environmentMap->GetColor(ray) : Color(0, 0, 0);
     }
 
     void RenderLine(Image &image,
@@ -72,14 +72,14 @@ private:
         for (int x = 0; x < image.width; ++x)
         {
             Color color(0, 0, 0);
-            for (int s = 0; s < SamplesPerPixel; ++s)
+            for (int s = 0; s < samplesPerPixel; ++s)
             {
                 auto sampleOffset = Vector3(RandomDouble() - 0.5, RandomDouble() - 0.5, 0.0);
                 Ray ray = camera.GetRay((x + sampleOffset.x()) * pixelDelta.x(),
                                         (line_number + sampleOffset.y()) * pixelDelta.y());
-                color += GetColor(ray, world, MaxDepth);
+                color += GetColor(ray, world, maxDepth);
             }
-            image.pixels[line_number][x] = color / SamplesPerPixel;
+            image.pixels[line_number][x] = color / samplesPerPixel;
         }
     }
 
@@ -89,7 +89,7 @@ public:
                 const Hittable &world)
     {
         auto hardwareLimit = std::thread::hardware_concurrency();
-        auto threadCount = MaxThreadCount = 0 ? 0 : std::min(MaxThreadCount, hardwareLimit);
+        auto threadCount = maxThreadCount = 0 ? 0 : std::min(maxThreadCount, hardwareLimit);
         ProgressTracker progressTracker(image.height);
 
 #ifdef PPL
