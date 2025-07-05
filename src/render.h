@@ -26,7 +26,7 @@
 #endif
 
 #include "camera.h"
-#include "sphere.h"
+#include "collision/sphere.h"
 #include "image.h"
 #include "ray.h"
 #include "vector3.h"

@@ -1,15 +1,15 @@
 #pragma once
 
 #include "collision/hittable.h"
-#include "quad.h"
+#include "collision/quad.h"
 #include "camera.h"
 #include "material.h"
 #include "scenes/scene.h"
 #include "collision/bvh_node.h"
 #include "vector3.h"
 #include "collision/box.h"
-#include <transform.h>
-#include <instance.h>
+#include "transform.h"
+#include "collision/instance.h"
 #include "collision/triangle.h"
 
 Scene TriangleTest()

@@ -2,8 +2,8 @@
 
 #include <memory>
 
-#include "hittable_list.h"
-#include "quad.h"
+#include "collision/hittable_list.h"
+#include "collision/quad.h"
 
 inline shared_ptr<HittableList> CreateBox(const Point3 &a, const Point3 &b, shared_ptr<Material> mat)
 {

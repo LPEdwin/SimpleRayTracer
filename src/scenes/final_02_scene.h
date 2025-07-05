@@ -1,15 +1,15 @@
 #pragma once
 
 #include "collision/hittable.h"
-#include "quad.h"
+#include "collision/quad.h"
 #include "camera.h"
 #include "material.h"
 #include "scenes/scene.h"
 #include "collision/bvh_node.h"
 #include "vector3.h"
 #include "collision/box.h"
-#include <transform.h>
-#include <instance.h>
+#include "transform.h"
+#include "collision/instance.h"
 
 Scene CreateFinal02Scene()
 {
@@ -39,7 +39,7 @@ Scene CreateFinal02Scene()
 
     auto light = make_shared<Emissive>(Color(7, 7, 7));
     world.push_back(make_shared<Quad>(Point3(123, 554, 147), Vector3(300, 0, 0), Vector3(0, 0, 265), light));
- 
+
     world.push_back(make_shared<Sphere>(Point3(260, 150, 45), 50, make_shared<Dielectric>(1.5)));
     world.push_back(make_shared<Sphere>(Point3(0, 150, 145), 50, make_shared<Metal>(Color(0.8, 0.8, 0.9), 1.0)));
 

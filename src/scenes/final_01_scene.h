@@ -4,9 +4,9 @@
 
 #include "scenes/scene.h"
 #include "collision/hittable.h"
-#include "hittable_list.h"
+#include "collision/hittable_list.h"
 #include "material.h"
-#include "sphere.h"
+#include "collision/sphere.h"
 #include "camera.h"
 #include "collision/bvh_node.h"
 

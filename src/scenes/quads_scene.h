@@ -2,7 +2,7 @@
 
 #include "scenes/scene.h"
 #include "collision/bvh_node.h"
-#include "quad.h"
+#include "collision/quad.h"
 
 Scene CreateQuadsScene()
 {

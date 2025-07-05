@@ -12,7 +12,7 @@
 
 #include "collision/aabb.h"
 #include "collision/hittable.h"
-#include "hittable_list.h"
+#include "collision/hittable_list.h"
 
 #include <algorithm>
 
