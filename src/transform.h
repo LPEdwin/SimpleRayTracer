@@ -46,12 +46,41 @@ public:
         return Vector3(x, y, z);
     }
 
-    // Transform a normal (requires inverse transpose for non-uniform scaling)
-    // For now, assumes uniform scaling - proper implementation would need inverse transpose
     Vector3 TransformNormal(const Vector3 &normal) const
     {
-        Vector3 transformed = TransformVector(normal);
-        return UnitVector(transformed);
+        // Extract 3x3 linear part
+        double a00 = m[0][0], a01 = m[0][1], a02 = m[0][2];
+        double a10 = m[1][0], a11 = m[1][1], a12 = m[1][2];
+        double a20 = m[2][0], a21 = m[2][1], a22 = m[2][2];
+
+        // Compute inverse of the 3x3 matrix
+        double det = a00 * (a11 * a22 - a12 * a21) - a01 * (a10 * a22 - a12 * a20) + a02 * (a10 * a21 - a11 * a20);
+
+        if (std::abs(det) < 1e-8)
+            throw std::runtime_error("TransformNormal: matrix is singular");
+
+        double inv_det = 1.0 / det;
+
+        // Compute inverse matrix (transpose as we go)
+        double i00 = (a11 * a22 - a12 * a21) * inv_det;
+        double i10 = -(a10 * a22 - a12 * a20) * inv_det;
+        double i20 = (a10 * a21 - a11 * a20) * inv_det;
+
+        double i01 = -(a01 * a22 - a02 * a21) * inv_det;
+        double i11 = (a00 * a22 - a02 * a20) * inv_det;
+        double i21 = -(a00 * a21 - a01 * a20) * inv_det;
+
+        double i02 = (a01 * a12 - a02 * a11) * inv_det;
+        double i12 = -(a00 * a12 - a02 * a10) * inv_det;
+        double i22 = (a00 * a11 - a01 * a10) * inv_det;
+
+        // Apply transpose of inverse
+        Vector3 n;
+        n[0] = i00 * normal.x() + i10 * normal.y() + i20 * normal.z();
+        n[1] = i01 * normal.x() + i11 * normal.y() + i21 * normal.z();
+        n[2] = i02 * normal.x() + i12 * normal.y() + i22 * normal.z();
+
+        return UnitVector(n);
     }
 
     // Matrix composition
@@ -72,24 +101,53 @@ public:
         return Transform(result);
     }
 
-    // Get the inverse transform (simplified - assumes only translation, rotation, uniform scale)
     Transform Inverse() const
     {
-        // For a proper implementation, you'd compute the full matrix inverse
-        // This is a simplified version for common cases
+        constexpr double eps = std::numeric_limits<double>::epsilon();
+        std::array<std::array<double, 4>, 4> inv{};
 
-        // Extract translation
+        // Extract upper-left 3x3 matrix (rotation + scale)
+        double a00 = m[0][0], a01 = m[0][1], a02 = m[0][2];
+        double a10 = m[1][0], a11 = m[1][1], a12 = m[1][2];
+        double a20 = m[2][0], a21 = m[2][1], a22 = m[2][2];
+
+        // Compute determinant of the 3x3 matrix
+        double det = a00 * (a11 * a22 - a12 * a21) - a01 * (a10 * a22 - a12 * a20) + a02 * (a10 * a21 - a11 * a20);
+
+        if (std::abs(det) < eps)
+        {
+            throw std::runtime_error("Transform::Inverse() - matrix is singular (non-invertible)");
+        }
+
+        double inv_det = 1.0 / det;
+
+        // Compute inverse of upper-left 3x3 matrix (adjugate / determinant)
+        inv[0][0] = (a11 * a22 - a12 * a21) * inv_det;
+        inv[0][1] = -(a01 * a22 - a02 * a21) * inv_det;
+        inv[0][2] = (a01 * a12 - a02 * a11) * inv_det;
+
+        inv[1][0] = -(a10 * a22 - a12 * a20) * inv_det;
+        inv[1][1] = (a00 * a22 - a02 * a20) * inv_det;
+        inv[1][2] = -(a00 * a12 - a02 * a10) * inv_det;
+
+        inv[2][0] = (a10 * a21 - a11 * a20) * inv_det;
+        inv[2][1] = -(a00 * a21 - a01 * a20) * inv_det;
+        inv[2][2] = (a00 * a11 - a01 * a10) * inv_det;
+
+        // Invert the translation
         double tx = m[0][3];
         double ty = m[1][3];
         double tz = m[2][3];
 
-        // Create inverse matrix
-        std::array<std::array<double, 4>, 4> inv_matrix = {{{{m[0][0], m[1][0], m[2][0], -(m[0][0] * tx + m[1][0] * ty + m[2][0] * tz)}},
-                                                            {{m[0][1], m[1][1], m[2][1], -(m[0][1] * tx + m[1][1] * ty + m[2][1] * tz)}},
-                                                            {{m[0][2], m[1][2], m[2][2], -(m[0][2] * tx + m[1][2] * ty + m[2][2] * tz)}},
-                                                            {{0.0, 0.0, 0.0, 1.0}}}};
+        inv[0][3] = -(inv[0][0] * tx + inv[0][1] * ty + inv[0][2] * tz);
+        inv[1][3] = -(inv[1][0] * tx + inv[1][1] * ty + inv[1][2] * tz);
+        inv[2][3] = -(inv[2][0] * tx + inv[2][1] * ty + inv[2][2] * tz);
 
-        return Transform(inv_matrix);
+        // Last row stays the same
+        inv[3][0] = inv[3][1] = inv[3][2] = 0.0;
+        inv[3][3] = 1.0;
+
+        return Transform(inv);
     }
 
     Transform Translate(double x, double y, double z) const
@@ -137,6 +195,11 @@ public:
         return *this * Transform::FromScale(s);
     }
 
+    Transform Scale(double sx, double sy, double sz) const
+    {
+        return *this * Transform::FromScale(sx, sy, sz);
+    }
+
     // Static factory methods for common transformations
     static Transform FromTranslate(double x, double y, double z)
     {
@@ -152,14 +215,16 @@ public:
         return FromTranslate(offset.x(), offset.y(), offset.z());
     }
 
-    // Uniform scaling
-    // Note: Non-uniform scaling would require to fully implement
-    // the inverse transpose for normal transformation to work correctly.
     static Transform FromScale(double s)
     {
-        std::array<std::array<double, 4>, 4> matrix = {{{{s, 0.0, 0.0, 0.0}},
-                                                        {{0.0, s, 0.0, 0.0}},
-                                                        {{0.0, 0.0, s, 0.0}},
+        return FromScale(s, s, s);
+    }
+
+    static Transform FromScale(double sx, double sy, double sz)
+    {
+        std::array<std::array<double, 4>, 4> matrix = {{{{sx, 0.0, 0.0, 0.0}},
+                                                        {{0.0, sy, 0.0, 0.0}},
+                                                        {{0.0, 0.0, sz, 0.0}},
                                                         {{0.0, 0.0, 0.0, 1.0}}}};
         return Transform(matrix);
     }
