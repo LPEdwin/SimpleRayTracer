@@ -160,7 +160,7 @@ struct fmt::formatter<AABB>
     template <typename FormatContext>
     auto format(const AABB &aabb, FormatContext &ctx) const
     {
-        return fmt::format_to(ctx.out(), "AABB[min: ({}, {}, {}), max: ({}, {}, {})]",
+        return fmt::format_to(ctx.out(), "[min: ({}, {}, {}), max: ({}, {}, {})]",
                               aabb.x.min, aabb.y.min, aabb.z.min,
                               aabb.x.max, aabb.y.max, aabb.z.max);
     }
