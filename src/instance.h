@@ -29,7 +29,7 @@ public:
     {
         // Transform the ray to the object's local space
         Ray local_ray(inverse_transform * ray.origin,
-                      inverse_transform.TransformVector(ray.direction),
+                      inverse_transform.TransformDirection(ray.direction),
                       ray.time);
 
         // Call the underlying hittable's Hit method

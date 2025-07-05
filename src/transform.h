@@ -38,7 +38,7 @@ public:
     }
 
     // Transform a vector (assumes w = 0, no translation)
-    Vector3 TransformVector(const Vector3 &vec) const
+    Vector3 TransformDirection(const Vector3 &vec) const
     {
         double x = m[0][0] * vec.x() + m[0][1] * vec.y() + m[0][2] * vec.z();
         double y = m[1][0] * vec.x() + m[1][1] * vec.y() + m[1][2] * vec.z();
