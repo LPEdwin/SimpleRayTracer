@@ -3,9 +3,9 @@
 #include <cassert>
 #include <memory>
 
-#include "ray.h"
-#include "vector3.h"
-#include "collision/aabb.h"
+#include "core/ray.h"
+#include "core/vector3.h"
+#include "core/aabb.h"
 
 class Material; // Forward declaration
 

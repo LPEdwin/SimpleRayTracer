@@ -8,12 +8,12 @@
 // along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 //==============================================================================================
 
-#include "collision/hittable.h"
+#include "core/hittable.h"
 #include "collision/hittable_list.h"
-#include "ray.h"
-#include "vector3.h"
-#include "collision/aabb.h"
-#include "material.h"
+#include "core/ray.h"
+#include "core/vector3.h"
+#include "core/aabb.h"
+#include "core/material.h"
 
 // actually quadrilateral primitive
 class Quad : public Hittable

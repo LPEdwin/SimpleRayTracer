@@ -10,8 +10,8 @@
 // along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 //==============================================================================================
 
-#include "collision/aabb.h"
-#include "collision/hittable.h"
+#include "core/aabb.h"
+#include "core/hittable.h"
 #include "collision/hittable_list.h"
 
 #include <algorithm>

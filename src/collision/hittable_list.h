@@ -3,8 +3,8 @@
 #include <vector>
 #include <memory>
 
-#include "collision/hittable.h"
-#include "ray.h"
+#include "core/hittable.h"
+#include "core/ray.h"
 
 using std::make_shared;
 using std::shared_ptr;

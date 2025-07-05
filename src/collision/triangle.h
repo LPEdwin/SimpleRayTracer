@@ -1,10 +1,10 @@
 #pragma once
 
-#include "vector3.h"
-#include "ray.h"
-#include "collision/hittable.h"
-#include "collision/aabb.h"
-#include "material.h"
+#include "core/vector3.h"
+#include "core/ray.h"
+#include "core/hittable.h"
+#include "core/aabb.h"
+#include "core/material.h"
 
 struct Triangle final : public Hittable
 {

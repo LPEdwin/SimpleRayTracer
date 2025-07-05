@@ -1,9 +1,9 @@
 #pragma once
 
 #include <numbers>
-#include "vector3.h"
-#include "ray.h"
-#include "random.h"
+#include "core/vector3.h"
+#include "core/ray.h"
+#include "core/random.h"
 
 using namespace std;
 using namespace std::numbers;

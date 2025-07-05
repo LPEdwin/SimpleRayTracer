@@ -1,9 +1,9 @@
 #pragma once
 
-#include "collision/hittable.h"
-#include "transform.h"
-#include "collision/aabb.h"
-#include "ray.h"
+#include "core/hittable.h"
+#include "core/transform.h"
+#include "core/aabb.h"
+#include "core/ray.h"
 
 class Instance : public Hittable
 {

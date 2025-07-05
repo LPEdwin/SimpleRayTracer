@@ -13,13 +13,13 @@
 #include <numbers>
 #include <chrono>
 
-#include "vector3.h"
-#include "image.h"
-#include "camera.h"
-#include "sphere.h"
+#include "core/vector3.h"
+#include "io/image.h"
+#include "core/camera.h"
+#include "collision/sphere.h"
 #include "render.h"
-#include "hittable_list.h"
-#include "bvh_node.h"
+#include "collision/hittable_list.h"
+#include "collision/bvh_node.h"
 #include "scenes/scene.h"
 #include "scenes/quads_scene.h"
 #include "scenes/final_01_scene.h"
@@ -34,7 +34,7 @@ using namespace std::chrono;
 int main()
 {
     fmt::println("Building Scene...");
-    auto scene = CreateFinal02Scene();
+    auto scene = CreateCornellBox();
     auto height = 720;
     auto width = static_cast<int>(height * scene.camera->AspectRatio());
     fmt::println("Image size: {} x {}", width, height);

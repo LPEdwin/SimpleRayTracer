@@ -1,7 +1,7 @@
 #pragma once
 
-#include "collision/hittable.h"
-#include "camera.h"
+#include "core/hittable.h"
+#include "core/camera.h"
 #include "render.h"
 
 struct Scene

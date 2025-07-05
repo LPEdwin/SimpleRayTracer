@@ -25,13 +25,13 @@
 #include <tbb/global_control.h>
 #endif
 
-#include "camera.h"
+#include "core/camera.h"
 #include "collision/sphere.h"
-#include "image.h"
-#include "ray.h"
-#include "vector3.h"
-#include "collision/hittable.h"
-#include "progress_tracker.h"
+#include "io/image.h"
+#include "core/ray.h"
+#include "core/vector3.h"
+#include "core/hittable.h"
+#include "io/progress_tracker.h"
 
 static const double inf = std::numeric_limits<double>::infinity();
 

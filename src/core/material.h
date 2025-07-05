@@ -11,9 +11,9 @@
 
 #pragma once
 
-#include "ray.h"
-#include "vector3.h"
-#include "collision/hittable.h"
+#include "core/ray.h"
+#include "core/vector3.h"
+#include "core/hittable.h"
 
 class Material
 {

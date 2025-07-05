@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <vector>
 #include <iostream>
-#include "vector3.h"
+#include "core/vector3.h"
 
 struct Image
 {

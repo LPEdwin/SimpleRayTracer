@@ -1,9 +1,9 @@
 #pragma once
 
-#include "interval.h"
-#include "vector3.h"
-#include "ray.h"
-#include "transform.h"
+#include "core/interval.h"
+#include "core/vector3.h"
+#include "core/ray.h"
+#include "core/transform.h"
 
 class AABB
 {

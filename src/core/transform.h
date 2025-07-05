@@ -3,7 +3,7 @@
 #include <array>
 #include <numbers>
 
-#include "vector3.h"
+#include "core/vector3.h"
 
 constexpr double DegToRad = std::numbers::pi / 180.0;
 

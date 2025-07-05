@@ -1,14 +1,14 @@
 #pragma once
 
-#include "collision/hittable.h"
+#include "core/hittable.h"
 #include "collision/quad.h"
-#include "camera.h"
-#include "material.h"
+#include "core/camera.h"
+#include "core/material.h"
 #include "scenes/scene.h"
 #include "collision/bvh_node.h"
-#include "vector3.h"
+#include "core/vector3.h"
 #include "collision/box.h"
-#include "transform.h"
+#include "core/transform.h"
 #include "collision/instance.h"
 
 Scene CreateCornellBox()
