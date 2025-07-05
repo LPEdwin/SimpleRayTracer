@@ -7,7 +7,7 @@ struct Interval
     double min;
     double max;
 
-    Interval() : min(-std::numeric_limits<double>::infinity()), max(std::numeric_limits<double>::infinity()) {}
+    Interval() : min(std::numeric_limits<double>::infinity()), max(-std::numeric_limits<double>::infinity()) {}
     Interval(double min, double max) : min(min), max(max) {}
 
     Interval(const Interval &a, const Interval &b)
