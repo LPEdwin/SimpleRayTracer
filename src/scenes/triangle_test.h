@@ -5,7 +5,7 @@
 #include "camera.h"
 #include "material.h"
 #include "scenes/scene.h"
-#include "bvh_node.h"
+#include "collision/bvh_node.h"
 #include "vector3.h"
 #include "collision/box.h"
 #include <transform.h>

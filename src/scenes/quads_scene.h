@@ -1,7 +1,7 @@
 #pragma once
 
 #include "scenes/scene.h"
-#include "bvh_node.h"
+#include "collision/bvh_node.h"
 #include "quad.h"
 
 Scene CreateQuadsScene()

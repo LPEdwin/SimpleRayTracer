@@ -8,7 +8,7 @@
 #include "material.h"
 #include "sphere.h"
 #include "camera.h"
-#include "bvh_node.h"
+#include "collision/bvh_node.h"
 
 Scene CreateFinalScene()
 {
