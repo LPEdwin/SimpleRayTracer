@@ -2,7 +2,7 @@
 
 #include "hittable.h"
 #include "transform.h"
-#include "aabb.h"
+#include "collision/aabb.h"
 #include "ray.h"
 
 class Instance : public Hittable

@@ -5,7 +5,7 @@
 
 #include "ray.h"
 #include "vector3.h"
-#include "aabb.h"
+#include "collision/aabb.h"
 
 class Material; // Forward declaration
 

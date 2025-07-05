@@ -12,7 +12,7 @@
 #include "hittable_list.h"
 #include "ray.h"
 #include "vector3.h"
-#include "aabb.h"
+#include "collision/aabb.h"
 #include "material.h"
 
 // actually quadrilateral primitive
