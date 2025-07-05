@@ -17,7 +17,7 @@
 #include "io/image.h"
 #include "core/camera.h"
 #include "collision/sphere.h"
-#include "render.h"
+#include "core/renderer.h"
 #include "collision/hittable_list.h"
 #include "collision/bvh_node.h"
 #include "scenes/scene.h"
@@ -34,15 +34,19 @@ using namespace std::chrono;
 int main()
 {
     fmt::println("Building Scene...");
-    auto scene = CreateCornellBox();
+    auto scene = CornellBox();
     auto height = 720;
     auto width = static_cast<int>(height * scene.camera->AspectRatio());
     fmt::println("Image size: {} x {}", width, height);
     Image image(width, height);
 
     auto start = steady_clock::now();
-
-    Render(*scene.camera, *scene.objects, image, scene.backgroundFunc);
+    Renderer renderer{
+        .MaxDepth = 50,
+        .SamplesPerPixel = 100,
+        .MaxThreadCount = 0,
+        .EnvironmentMap = scene.environmentMap};
+    renderer.Render(image, *scene.camera, *scene.objects);
 
     auto end = steady_clock::now();
     auto duration = duration_cast<seconds>(end - start);
