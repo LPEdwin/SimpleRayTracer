@@ -145,3 +145,23 @@ AABB operator+(const Vector3 &offset, const AABB &bbox)
 {
     return bbox + offset;
 }
+
+#define FMT_HEADER_ONLY
+#include <fmt/format.h>
+
+template <>
+struct fmt::formatter<AABB>
+{
+    constexpr auto parse(format_parse_context &ctx)
+    {
+        return ctx.end();
+    }
+
+    template <typename FormatContext>
+    auto format(const AABB &aabb, FormatContext &ctx) const
+    {
+        return fmt::format_to(ctx.out(), "AABB[min: ({}, {}, {}), max: ({}, {}, {})]",
+                              aabb.x.min, aabb.y.min, aabb.z.min,
+                              aabb.x.max, aabb.y.max, aabb.z.max);
+    }
+};
