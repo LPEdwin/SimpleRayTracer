@@ -4,7 +4,7 @@
 #include "collision/bvh_node.h"
 #include "collision/quad.h"
 
-Scene CreateQuadsScene()
+Scene QuadsScene()
 {
     HittableList world;
 
@@ -23,7 +23,8 @@ Scene CreateQuadsScene()
     world.add(make_shared<Quad>(Point3(-2, -3, 5), Vector3(4, 0, 0), Vector3(0, 0, -4), lower_teal));
 
     Camera cam(Point3(0, 0, 9), Point3(0, 0, 0), 80.0, 1.0);
-    return Scene{BvhNode::Build(world.shapes),
-                 make_shared<Camera>(cam),
-                 GradientBackground};
+    return Scene{
+        .objects = BvhNode::Build(world.shapes),
+        .camera = make_shared<Camera>(cam),
+        .environmentMap = GradientMap::Sky()};
 }

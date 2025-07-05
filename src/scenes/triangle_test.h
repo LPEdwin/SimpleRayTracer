@@ -30,5 +30,8 @@ Scene TriangleTest()
     world.push_back(t1);
 
     Camera cam(Vector3(0, 300, -800), Vector3(0, 0, 0), 40.0, 1.0);
-    return Scene{BvhNode::Build(world), make_shared<Camera>(cam), GradientBackground};
+    return Scene{
+        .objects = BvhNode::Build(world),
+        .camera = make_shared<Camera>(cam),
+        .environmentMap = GradientMap::Sky()};
 }

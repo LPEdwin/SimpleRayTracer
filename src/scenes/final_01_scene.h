@@ -10,7 +10,7 @@
 #include "core/camera.h"
 #include "collision/bvh_node.h"
 
-Scene CreateFinalScene()
+Scene FinalScene01()
 {
     vector<shared_ptr<Hittable>> scene_objects{};
 
@@ -67,11 +67,11 @@ Scene CreateFinalScene()
     return Scene{
         .objects = BvhNode::Build(scene_objects, 0, scene_objects.size()),
         .camera = camera,
-        .backgroundFunc = GradientBackground};
+        .environmentMap = GradientMap::Sky()};
 }
 
 // Create a benchmark scene with precomputed random values for reproducibility
-Scene CreateBenchmark01()
+Scene Benchmark01()
 {
     vector<shared_ptr<Hittable>> scene_objects{};
 
@@ -173,5 +173,5 @@ Scene CreateBenchmark01()
     return Scene{
         .objects = BvhNode::Build(scene_objects, 0, scene_objects.size()),
         .camera = camera,
-        .backgroundFunc = GradientBackground};
+        .environmentMap = GradientMap::Sky()};
 }

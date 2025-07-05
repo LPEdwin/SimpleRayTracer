@@ -11,7 +11,7 @@
 #include "core/transform.h"
 #include "collision/instance.h"
 
-Scene CreateCornellBox()
+Scene CornellBox()
 {
     vector<shared_ptr<Hittable>> world;
 

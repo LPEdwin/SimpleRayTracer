@@ -11,7 +11,7 @@
 #include "core/transform.h"
 #include "collision/instance.h"
 
-Scene CreateFinal02Scene()
+Scene FinalScene02()
 {
     vector<shared_ptr<Hittable>> boxes1;
     auto ground = make_shared<Lambertian>(Color(0.48, 0.83, 0.53));
