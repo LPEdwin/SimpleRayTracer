@@ -193,3 +193,21 @@ inline Vector3 Refract(const Vector3 &uv, const Vector3 &n, double etai_over_eta
     Vector3 r_out_parallel = -std::sqrt(std::fabs(1.0 - r_out_perp.LengthSquared())) * n;
     return r_out_perp + r_out_parallel;
 }
+
+#define FMT_HEADER_ONLY
+#include <fmt/format.h>
+
+template <>
+struct fmt::formatter<Vector3>
+{
+    constexpr auto parse(format_parse_context &ctx)
+    {
+        return ctx.end();
+    }
+
+    template <typename FormatContext>
+    auto format(const Vector3 &v, FormatContext &ctx) const
+    {
+        return fmt::format_to(ctx.out(), "({}, {}, {})", v.x(), v.y(), v.z());
+    }
+};
