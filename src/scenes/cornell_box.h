@@ -36,5 +36,7 @@ Scene CornellBox()
     world.push_back(box2);
 
     Camera cam(Vector3(0, 278, -800), Vector3(0, 278, 0), 40.0, 1.0);
-    return Scene{BvhNode::Build(world), make_shared<Camera>(cam)};
+    return Scene{
+        .objects = BvhNode::Build(world),
+        .camera = make_shared<Camera>(cam)};
 }
