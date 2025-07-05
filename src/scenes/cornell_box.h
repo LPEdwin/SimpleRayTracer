@@ -7,9 +7,9 @@
 #include "scenes/scene.h"
 #include "bvh_node.h"
 #include "vector3.h"
-#include <box.h>
-#include <transform.h>
-#include <instance.h>
+#include "collision/box.h"
+#include "transform.h"
+#include "instance.h"
 
 Scene CreateCornellBox()
 {
