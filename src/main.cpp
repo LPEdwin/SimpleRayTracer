@@ -25,6 +25,7 @@
 #include "scenes/final_01_scene.h"
 #include "scenes/cornell_box.h"
 #include "scenes/final_02_scene.h"
+#include "scenes/triangle_test.h"
 
 using namespace std;
 using namespace std::numbers;
@@ -32,10 +33,11 @@ using namespace std::chrono;
 
 int main()
 {
+    fmt::println("Building Scene...");
     auto scene = CreateFinal02Scene();
     auto height = 720;
     auto width = static_cast<int>(height * scene.camera->AspectRatio());
-    fmt::print("Image size: {} x {}\n", width, height);
+    fmt::println("Image size: {} x {}", width, height);
     Image image(width, height);
 
     auto start = steady_clock::now();
