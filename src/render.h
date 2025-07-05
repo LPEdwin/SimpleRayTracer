@@ -30,7 +30,7 @@
 #include "image.h"
 #include "ray.h"
 #include "vector3.h"
-#include "hittable.h"
+#include "collision/hittable.h"
 #include "progress_tracker.h"
 
 static const double inf = std::numeric_limits<double>::infinity();

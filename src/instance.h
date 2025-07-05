@@ -1,6 +1,6 @@
 #pragma once
 
-#include "hittable.h"
+#include "collision/hittable.h"
 #include "transform.h"
 #include "collision/aabb.h"
 #include "ray.h"

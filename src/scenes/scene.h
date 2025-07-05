@@ -1,6 +1,6 @@
 #pragma once
 
-#include "hittable.h"
+#include "collision/hittable.h"
 #include "camera.h"
 #include "render.h"
 

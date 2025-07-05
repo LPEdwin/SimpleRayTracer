@@ -2,7 +2,7 @@
 
 #include "vector3.h"
 #include "ray.h"
-#include "hittable.h"
+#include "collision/hittable.h"
 #include "collision/aabb.h"
 #include "material.h"
 

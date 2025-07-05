@@ -3,7 +3,7 @@
 #include <vector>
 #include <memory>
 
-#include "hittable.h"
+#include "collision/hittable.h"
 #include "ray.h"
 
 using std::make_shared;

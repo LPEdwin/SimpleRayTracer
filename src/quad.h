@@ -8,7 +8,7 @@
 // along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 //==============================================================================================
 
-#include "hittable.h"
+#include "collision/hittable.h"
 #include "hittable_list.h"
 #include "ray.h"
 #include "vector3.h"

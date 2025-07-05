@@ -13,7 +13,7 @@
 
 #include "ray.h"
 #include "vector3.h"
-#include "hittable.h"
+#include "collision/hittable.h"
 
 class Material
 {

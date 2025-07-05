@@ -11,7 +11,7 @@
 //==============================================================================================
 
 #include "collision/aabb.h"
-#include "hittable.h"
+#include "collision/hittable.h"
 #include "hittable_list.h"
 
 #include <algorithm>
