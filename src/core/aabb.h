@@ -160,16 +160,27 @@ AABB operator+(const Vector3 &offset, const AABB &bbox)
 template <>
 struct fmt::formatter<AABB>
 {
-    constexpr auto parse(format_parse_context &ctx)
-    {
-        return ctx.end();
-    }
+    fmt::formatter<double> float_fmt;
+
+    constexpr auto parse(fmt::format_parse_context &ctx) { return float_fmt.parse(ctx); }
 
     template <typename FormatContext>
     auto format(const AABB &aabb, FormatContext &ctx) const
     {
-        return fmt::format_to(ctx.out(), "[min: ({}, {}, {}), max: ({}, {}, {})]",
-                              aabb.x.min, aabb.y.min, aabb.z.min,
-                              aabb.x.max, aabb.y.max, aabb.z.max);
+        auto out = ctx.out();
+        out = fmt::format_to(out, "[min: (");
+        out = float_fmt.format(aabb.x.min, ctx);
+        out = fmt::format_to(out, ", ");
+        out = float_fmt.format(aabb.y.min, ctx);
+        out = fmt::format_to(out, ", ");
+        out = float_fmt.format(aabb.z.min, ctx);
+        out = fmt::format_to(out, "), max: (");
+        out = float_fmt.format(aabb.x.max, ctx);
+        out = fmt::format_to(out, ", ");
+        out = float_fmt.format(aabb.y.max, ctx);
+        out = fmt::format_to(out, ", ");
+        out = float_fmt.format(aabb.z.max, ctx);
+        out = fmt::format_to(out, ")]");
+        return out;
     }
 };
