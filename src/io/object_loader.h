@@ -95,7 +95,7 @@ static std::shared_ptr<HittableList> LoadAsHittableList(const std::string &filen
     return std::make_shared<HittableList>(triangles);
 }
 
-static std::shared_ptr<Hittable> LoadAsMesh(const std::string &filename)
+static std::shared_ptr<Mesh> LoadAsMesh(const std::string &filename)
 {
     auto faces = ReadFaces(filename);
     return std::make_shared<Mesh>(std::move(faces));
