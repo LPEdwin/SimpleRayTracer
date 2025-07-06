@@ -54,10 +54,7 @@ struct Triangle final : public Hittable
         // Ray hits triangle
         hit.t = t;
         hit.point = ray.At(t);
-
-        // Compute geometric normal at hit time
-        const Vector3 geometric_normal = UnitVector(Cross(edge1, edge2));
-        hit.SetFaceNormal(ray, geometric_normal);
+        hit.SetFaceNormal(ray, normal);
         hit.material = material;
 
         return true;
