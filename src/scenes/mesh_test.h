@@ -6,33 +6,56 @@
 #include "collision/hittable_list.h"
 #include "collision/instance.h"
 #include "collision/bvh_node.h"
+#include "core/transform.h"
+#include "collision/quad.h"
 
-Scene MeshTest(string file, bool useBvh = false)
+vector<shared_ptr<Hittable>> EmptyCornellBox()
 {
-    auto triangles = LoadObjectFile(file);
-    auto cam = std::make_shared<Camera>(Vector3(0, 278, -800), Vector3(0, 0, 0), 40.0, 1.0);
-    auto hittables = AsHittables(triangles);
-    shared_ptr<Hittable> mesh = std::make_shared<HittableList>(hittables);
+    vector<shared_ptr<Hittable>> world;
+
+    auto red = make_shared<Lambertian>(Color(.65, .05, .05));
+    auto white = make_shared<Lambertian>(Color(.73, .73, .73));
+    auto green = make_shared<Lambertian>(Color(.12, .45, .15));
+    auto light = make_shared<Emissive>(Color(15, 15, 15));
+
+    world.push_back(make_shared<Quad>(Point3(277.5, 0, 0), Vector3(0, 555, 0), Vector3(0, 0, 555), green));
+    world.push_back(make_shared<Quad>(Point3(-277.5, 0, 0), Vector3(0, 555, 0), Vector3(0, 0, 555), red));
+    world.push_back(make_shared<Quad>(Point3(65.5, 554, 332), Vector3(-130, 0, 0), Vector3(0, 0, -105), light));
+    world.push_back(make_shared<Quad>(Point3(-277.5, 0, 0), Vector3(555, 0, 0), Vector3(0, 0, 555), white));
+    world.push_back(make_shared<Quad>(Point3(277.5, 555, 555), Vector3(-555, 0, 0), Vector3(0, 0, -555), white));
+    world.push_back(make_shared<Quad>(Point3(-277.5, 0, 555), Vector3(555, 0, 0), Vector3(0, 555, 0), white));
+
+    return world;
+}
+
+Scene MeshTest(string file, bool useBvh = true)
+{
+    auto world = EmptyCornellBox();
+    auto faces = LoadAsHittableList(file);
+    fmt::println("Face Count: {}", faces->shapes.size());
+    shared_ptr<Hittable> mesh = faces;
     if (useBvh)
-        mesh = BvhNode::Build(hittables);
-    mesh = BvhNode::Build(hittables);
+        mesh = BvhNode::Build(faces->shapes);
     auto scale = 250.0 / mesh->BoundingBox().LongestAxis().Length();
-    auto scaled = std::make_shared<Instance>(mesh, Transform::FromScale(scale).RotateY(180));
-    fmt::println("BB Scaled Mesh: {}", scaled->BoundingBox());
-    fmt::println("Face Count: {}", hittables.size());
+    mesh = std::make_shared<Instance>(mesh, Transform::FromTranslate(0, 0, 300).Scale(scale).RotateY(180));
+    world.push_back(mesh);
+
+    fmt::println("Scaled Mesh BB: {}", mesh->BoundingBox());
+
+    auto cam = std::make_shared<Camera>(Vector3(0, 278, -800), Vector3(0, 278, 0), 40.0, 1.0);
+
     return Scene{
-        .objects = scaled,
+        .objects = BvhNode::Build(world),
         .camera = cam,
-        .environmentMap = GradientMap::Sky(),
     };
 }
 
-Scene Pyramid()
+Scene Pyramid(bool useBvh = true)
 {
-    return MeshTest("assets/pyramid.obj");
+    return MeshTest("assets/pyramid.obj", useBvh);
 }
 
-Scene StanfordBunny()
+Scene StanfordBunny(bool useBvh = true)
 {
-    return MeshTest("assets/stanford-bunny.obj");
+    return MeshTest("assets/stanford-bunny.obj", useBvh);
 }

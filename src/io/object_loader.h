@@ -9,10 +9,11 @@
 #include "core/hittable.h"
 #include "core/transform.h"
 #include "collision/triangle.h"
+#include "collision/mesh.h"
 
-static std::vector<Triangle> LoadObjectFile(const std::string &filename)
+static std::vector<Face> ReadFaces(const std::string &filename)
 {
-    std::vector<Triangle> faces;
+    std::vector<Face> faces;
     std::vector<Vector3> vertices;
 
     std::ifstream file(filename);
@@ -68,7 +69,7 @@ static std::vector<Triangle> LoadObjectFile(const std::string &filename)
                 throw std::runtime_error("Face references invalid vertex indices");
             }
 
-            faces.emplace_back(Triangle(vertices[v1], vertices[v2], vertices[v3]));
+            faces.emplace_back(Face(vertices[v1], vertices[v2], vertices[v3]));
         }
     }
 
@@ -80,14 +81,16 @@ static std::vector<Triangle> LoadObjectFile(const std::string &filename)
     return faces;
 }
 
-std::vector<std::shared_ptr<Hittable>> AsHittables(const std::vector<Triangle> &triangles)
+static std::shared_ptr<HittableList> LoadAsHittableList(const std::string &filename)
 {
-    std::vector<std::shared_ptr<Hittable>> hittables;
-    hittables.reserve(triangles.size());
+    auto faces = ReadFaces(filename);
+    std::vector<std::shared_ptr<Hittable>> triangles;
+    triangles.reserve(faces.size());
 
-    for (const auto &tri : triangles)
+    for (const auto &face : faces)
     {
-        hittables.push_back(std::make_shared<Triangle>(tri));
+        triangles.push_back(std::make_shared<Triangle>(face.v0, face.v1, face.v2));
     }
-    return hittables;
+
+    return std::make_shared<HittableList>(triangles);
 }
