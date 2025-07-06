@@ -56,12 +56,18 @@ public:
     {
         SetBoundingBox();
     }
+
     Mesh(std::vector<Face> &&faces, std::shared_ptr<Material> material = DefaultMaterial())
         : faces(std::move(faces)), material(material)
     {
         SetBoundingBox();
     }
 
+    size_t FaceCount() const
+    {
+        return faces.size();
+    }
+    
     bool Hit(const Ray &ray, HitResult &hitResult, double t_min, double t_max) const override
     {
         double t;
