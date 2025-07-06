@@ -68,7 +68,7 @@ private:
         }
         else
         {
-            std::sort(std::begin(shapes) + start, std::begin(shapes) + end, BoxCompare(bbox.LongestAxis()));
+            std::sort(std::begin(shapes) + start, std::begin(shapes) + end, BoxCompare(bbox.LongestAxisIndex()));
 
             auto mid = start + object_span / 2;
             left = BuildRecursive(shapes, start, mid);

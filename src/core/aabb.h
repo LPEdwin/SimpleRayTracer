@@ -81,12 +81,20 @@ public:
     }
 
     // Returns the index of the longest axis of the bounding box.
-    int LongestAxis() const
+    int LongestAxisIndex() const
     {
         if (x.Length() > y.Length())
             return x.Length() > z.Length() ? 0 : 2;
         else
             return y.Length() > z.Length() ? 1 : 2;
+    }
+
+    Interval LongestAxis() const
+    {
+        if (x.Length() > y.Length())
+            return x.Length() > z.Length() ? x : z;
+        else
+            return y.Length() > z.Length() ? y : z;
     }
 
     static AABB Transformed(const AABB &box, const Transform &transform)
