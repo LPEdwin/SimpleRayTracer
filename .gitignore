@@ -62,3 +62,6 @@ vcpkg_installed/
 .ninja_log
 build.ninja
 rules.ninja
+
+!assets/
+!assets/**

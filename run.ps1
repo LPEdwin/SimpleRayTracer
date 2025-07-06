@@ -61,6 +61,8 @@ switch ($compiler) {
     }  
 }
 
+Copy-Item "assets" "$buildDir" -Recurse -Force
+
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Compilation failed: $compileResult"
     exit 1
