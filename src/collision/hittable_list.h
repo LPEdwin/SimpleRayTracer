@@ -17,6 +17,11 @@ public:
 
     HittableList() {}
     HittableList(shared_ptr<Hittable> shape) { add(shape); }
+    HittableList(const vector<shared_ptr<Hittable>> &shapes) : shapes(shapes)
+    {
+        for (const auto &s : shapes)
+            bbox = AABB(bbox, s->BoundingBox());
+    }
 
     void clear() { shapes.clear(); }
 
