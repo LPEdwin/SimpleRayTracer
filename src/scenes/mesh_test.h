@@ -31,6 +31,25 @@ vector<shared_ptr<Hittable>> EmptyCornellBox()
 Scene MeshTest(string file, bool useBvh = true)
 {
     auto world = EmptyCornellBox();
+    auto mesh = LoadAsMesh(file);
+    fmt::println("Face Count: {}", mesh->FaceCount());
+    auto scale = 250.0 / mesh->BoundingBox().LongestAxis().Length();
+    auto scaled = std::make_shared<Instance>(mesh, Transform::FromTranslate(0, 0, 300).Scale(scale).RotateY(180));
+    world.push_back(scaled);
+
+    fmt::println("Scaled Mesh BB: {:.3f}", scaled->BoundingBox());
+
+    auto cam = std::make_shared<Camera>(Vector3(0, 278, -800), Vector3(0, 278, 0), 40.0, 1.0);
+
+    return Scene{
+        .objects = BvhNode::Build(world),
+        .camera = cam,
+    };
+}
+
+Scene ObjectAsHittableTest(string file, bool useBvh = true)
+{
+    auto world = EmptyCornellBox();
     auto faces = LoadAsHittableList(file);
     fmt::println("Face Count: {}", faces->shapes.size());
     shared_ptr<Hittable> mesh = faces;
@@ -40,7 +59,7 @@ Scene MeshTest(string file, bool useBvh = true)
     mesh = std::make_shared<Instance>(mesh, Transform::FromTranslate(0, 0, 300).Scale(scale).RotateY(180));
     world.push_back(mesh);
 
-    fmt::println("Scaled Mesh BB: {}", mesh->BoundingBox());
+    fmt::println("Scaled Mesh BB: {:.3f}", mesh->BoundingBox());
 
     auto cam = std::make_shared<Camera>(Vector3(0, 278, -800), Vector3(0, 278, 0), 40.0, 1.0);
 
@@ -58,4 +77,14 @@ Scene Pyramid(bool useBvh = true)
 Scene StanfordBunny(bool useBvh = true)
 {
     return MeshTest("assets/stanford-bunny.obj", useBvh);
+}
+
+Scene PyramidAsHittable(bool useBvh = true)
+{
+    return ObjectAsHittableTest("assets/pyramid.obj", useBvh);
+}
+
+Scene StanfordBunnyAsHittable(bool useBvh = true)
+{
+    return ObjectAsHittableTest("assets/stanford-bunny.obj", useBvh);
 }
