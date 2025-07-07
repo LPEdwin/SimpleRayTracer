@@ -109,8 +109,6 @@ namespace Fast
             return hasHit;
         }
 
-        // Todo
-        // use ray direction and left right ordering
         bool hitLeft = false, hitRight = false;
         if (node->leftNode)
             hitLeft = Traverse(ray, hit, t_min, t_max, node->leftNode, faces);
