@@ -14,6 +14,8 @@
 namespace Fast
 {
     static constexpr size_t INVALID_INDEX = static_cast<size_t>(-1);
+    static constexpr size_t MAX_FACES_PER_LEAF = 8;
+
     struct FastBvhNode
     {
         Vector3 min;
@@ -22,7 +24,7 @@ namespace Fast
         FastBvhNode *leftNode = nullptr;
         FastBvhNode *rightNode = nullptr;
 
-        std::array<size_t, 2> faces;
+        std::array<size_t, MAX_FACES_PER_LEAF> faces;
 
         FastBvhNode()
         {
@@ -74,7 +76,7 @@ namespace Fast
         return true;
     }
 
-    bool Traverse(const Ray &ray, HitResult &hit, double t_min, double t_max, FastBvhNode *node, const vector<Face> &faces)
+    bool Traverse(const Ray &ray, HitResult &hit, double t_min, double t_max, FastBvhNode *node, const std::vector<Face> &faces)
     {
         if (node == nullptr)
             return false;
@@ -117,7 +119,7 @@ namespace Fast
         return hitLeft || hitRight;
     }
 
-    void BuildRecursive(FastBvhNode *node, vector<Face> &faces, size_t start, size_t end)
+    void BuildRecursive(FastBvhNode *node, std::vector<Face> &faces, size_t start, size_t end)
     {
         if (node == nullptr)
             throw std::invalid_argument("node can't be null.");
@@ -136,7 +138,7 @@ namespace Fast
         n.max = bbox.max;
 
         // if sparse enough add faces
-        if (count <= n.faces.size())
+        if (count <= MAX_FACES_PER_LEAF)
         {
             for (int i = 0; i < count; i++)
             {
@@ -159,7 +161,7 @@ namespace Fast
         BuildRecursive(n.rightNode, faces, mid, end);
     }
 
-    FastBvhNode *Build(vector<Face> &faces)
+    FastBvhNode *Build(std::vector<Face> &faces)
     {
         if (faces.size() == 0)
             throw std::invalid_argument("faces can't be empty.");
@@ -183,7 +185,7 @@ namespace Fast
         }
 
     public:
-        static shared_ptr<FastMesh> Create(const std::string &file, std::shared_ptr<Material> material = DefaultMaterial())
+        static std::shared_ptr<FastMesh> Create(const std::string &file, std::shared_ptr<Material> material = DefaultMaterial())
         {
             std::vector<Face> faces = ReadFaces(file);
             if (faces.empty())
@@ -193,7 +195,7 @@ namespace Fast
 
             auto root = Build(faces);
             AABB bbox(root->min, root->max);
-            return shared_ptr<FastMesh>(new FastMesh(root, std::move(faces), bbox, material));
+            return std::shared_ptr<FastMesh>(new FastMesh(root, std::move(faces), bbox, material));
         }
 
         size_t FaceCount() const
