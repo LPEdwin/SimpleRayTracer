@@ -10,6 +10,7 @@
 #include "core/transform.h"
 #include "collision/triangle.h"
 #include "collision/mesh.h"
+#include "collision/face.h"
 
 static std::vector<Face> ReadFaces(const std::string &filename)
 {
