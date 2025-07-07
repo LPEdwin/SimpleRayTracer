@@ -70,21 +70,24 @@ bool TraverseFlatBvh(
     const std::vector<BvhFlatNode> &nodes,
     const std::vector<Face> &faces)
 {
-    std::stack<size_t> stack;
-    stack.push(0);
+    std::vector<size_t> stack;
+    stack.reserve(128);
+    stack.push_back(0);
     bool hasHit(false);
 
     while (!stack.empty())
     {
-        auto node = nodes[stack.top()];
-        stack.pop();
+        auto node = nodes[stack.back()];
+        stack.pop_back();
+
+        const auto isLeaf = node.object_index != static_cast<size_t>(-1);
 
         // check if nodes bounding box  is hit
         if (!HitBvhFlatNode(node, ray.origin, ray.direction, t_min, t_max))
             continue;
 
         // it's a leaf
-        if (node.object_index != static_cast<size_t>(-1))
+        if (isLeaf)
         {
             auto face = faces[node.object_index];
             double t = 0.0;
@@ -103,8 +106,8 @@ bool TraverseFlatBvh(
         }
         else
         {
-            stack.push(node.left_index);
-            stack.push(node.right_index);
+            stack.push_back(node.left_index);
+            stack.push_back(node.right_index);
         }
     }
 
