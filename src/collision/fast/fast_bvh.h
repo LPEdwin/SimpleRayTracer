@@ -76,7 +76,7 @@ namespace Fast
         return true;
     }
 
-    bool Traverse(const Ray &ray, HitResult &hit, double t_min, double t_max, FastBvhNode *node, const std::vector<Face> &faces)
+    bool Traverse(const Ray &ray, HitResult &hit, double &t_min, double &t_max, FastBvhNode *node, const std::vector<Face> &faces)
     {
         if (node == nullptr)
             return false;
