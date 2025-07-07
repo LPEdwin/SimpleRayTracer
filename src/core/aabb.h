@@ -97,6 +97,21 @@ public:
             return y.Length() > z.Length() ? y : z;
     }
 
+    Vector3 Min() const
+    {
+        return Vector3(x.min, y.min, z.min);
+    }
+
+    Vector3 Max() const
+    {
+        return Vector3(x.max, y.max, z.max);
+    }
+
+    bool Contains(const Point3 &p) const
+    {
+        return x.Contains(p.x()) && y.Contains(p.y()) && z.Contains(p.z());
+    }
+
     static AABB Transformed(const AABB &box, const Transform &transform)
     {
         std::array<Point3, 8> corners = {
