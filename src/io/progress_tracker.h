@@ -51,8 +51,8 @@ public:
         // Calculate ETA
         double eta_seconds = lines_per_sec > 0 ? (total - current) / lines_per_sec : 0;
 
-        fmt::print(stderr, "\rProgress: {}/{} ({:.1f}%) - {:.1f} lines/sec - ETA: {:.0f}s",
-                   current, total, percentage, lines_per_sec, eta_seconds);
+        fmt::print(stderr, "\rProgress: {}/{} ({:.1f}%) - {:.1f} lines/sec - ETA: {:.0f}s ({:.0f}s)",
+                   current, total, percentage, lines_per_sec, eta_seconds, eta_seconds + elapsed);
 
         if (current == total)
         {
