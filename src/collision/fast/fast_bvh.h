@@ -90,7 +90,7 @@ namespace Fast
             {
                 if (node->faces[i] == INVALID_INDEX)
                     break;
-                auto face = faces[node->faces[i]];
+                auto &face = faces[node->faces[i]];
                 if (HitFace(ray, face, t))
                 {
                     if (t >= t_min && t < t_max)
@@ -215,6 +215,21 @@ namespace Fast
         {
             return bbox;
         }
-    };
 
+        ~FastMesh()
+        {
+            DestroyNode(root);
+        }
+
+    private:
+        void DestroyNode(FastBvhNode *node)
+        {
+            if (node)
+            {
+                DestroyNode(node->leftNode);
+                DestroyNode(node->rightNode);
+                delete node;
+            }
+        }
+    };
 }
