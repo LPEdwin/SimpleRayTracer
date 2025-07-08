@@ -1,34 +1,19 @@
-
 #define FMT_HEADER_ONLY
 #include "fmt/core.h"
 #include "fmt/chrono.h"
 #include "fmt/format.h"
-#include "fmt/printf.h"
 
 #include <iostream>
-#include <cmath>
-#include <fstream>
-#include <cstdint>
-#include <vector>
-#include <numbers>
 #include <chrono>
+#include <exception>
 
-#include "core/vector3.h"
-#include "io/image.h"
 #include "core/camera.h"
-#include "collision/sphere.h"
 #include "core/renderer.h"
-#include "collision/hittable_list.h"
-#include "collision/bvh_node.h"
+#include "io/image.h"
 #include "scenes/scene.h"
-#include "scenes/quads_scene.h"
-#include "scenes/final_01_scene.h"
 #include "scenes/cornell_box.h"
-#include "scenes/final_02_scene.h"
-#include "scenes/triangle_test.h"
 
 using namespace std;
-using namespace std::numbers;
 using namespace std::chrono;
 
 int main()
