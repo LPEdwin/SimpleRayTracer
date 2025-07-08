@@ -5,13 +5,13 @@
 
 #include "core/ray.h"
 #include "core/hittable.h"
-#include "collision/mesh.h"
 #include "collision/face.h"
-#include "collision/bvh_flat.h"
 #include "core/material.h"
 #include "io/object_loader.h"
+#include "collision/experimental/bb_util.h"
 
-namespace Fast
+// Uses "final" types to prevent dynamic dispatching and raw pointers.
+namespace StaticBvh
 {
     static constexpr size_t INVALID_INDEX = static_cast<size_t>(-1);
     static constexpr size_t MAX_FACES_PER_LEAF = 8;
@@ -151,7 +151,7 @@ namespace Fast
 
         // sort and split faces
         size_t mid = start + count / 2;
-        std::nth_element(faces.begin() + start, faces.begin() + mid, faces.begin() + end, BoxCompareFlat(axisId));
+        std::nth_element(faces.begin() + start, faces.begin() + mid, faces.begin() + end, BBCompare(axisId));
 
         n.leftNode = new FastBvhNode();
         n.rightNode = new FastBvhNode();
@@ -169,7 +169,7 @@ namespace Fast
         return root;
     }
 
-    class FastMesh : public Hittable
+    class Mesh : public Hittable
     {
     private:
         std::vector<Face> faces;
@@ -177,13 +177,13 @@ namespace Fast
         std::shared_ptr<Material> material;
         AABB bbox;
 
-        FastMesh(FastBvhNode *root, std::vector<Face> &&faces, AABB bbox, std::shared_ptr<Material> material = DefaultMaterial())
+        Mesh(FastBvhNode *root, std::vector<Face> &&faces, AABB bbox, std::shared_ptr<Material> material = DefaultMaterial())
             : root(root), faces(std::move(faces)), bbox(bbox), material(material)
         {
         }
 
     public:
-        static std::shared_ptr<FastMesh> Create(const std::string &file, std::shared_ptr<Material> material = DefaultMaterial())
+        static std::shared_ptr<Mesh> Create(const std::string &file, std::shared_ptr<Material> material = DefaultMaterial())
         {
             std::vector<Face> faces = ReadFaces(file);
             if (faces.empty())
@@ -193,7 +193,7 @@ namespace Fast
 
             auto root = Build(faces);
             AABB bbox(root->min, root->max);
-            return std::shared_ptr<FastMesh>(new FastMesh(root, std::move(faces), bbox, material));
+            return std::shared_ptr<Mesh>(new Mesh(root, std::move(faces), bbox, material));
         }
 
         size_t FaceCount() const
@@ -216,7 +216,7 @@ namespace Fast
             return bbox;
         }
 
-        ~FastMesh()
+        ~Mesh()
         {
             DestroyNode(root);
         }

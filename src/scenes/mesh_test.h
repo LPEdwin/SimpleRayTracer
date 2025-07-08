@@ -8,6 +8,8 @@
 #include "collision/bvh_node.h"
 #include "core/transform.h"
 #include "collision/quad.h"
+#include "collision/experimental/flat_bvh.h"
+#include "collision/experimental/static_bvh.h"
 
 vector<shared_ptr<Hittable>> EmptyCornellBox()
 {
@@ -28,10 +30,48 @@ vector<shared_ptr<Hittable>> EmptyCornellBox()
     return world;
 }
 
-Scene MeshTest(string file, bool useBvh = true)
+Scene MeshTest(string file)
 {
     auto world = EmptyCornellBox();
-    auto mesh = LoadAsMesh(file);
+    auto mesh = LoadAsTriangleList(file);
+    auto scale = 250.0 / mesh->BoundingBox().LongestAxis().Length();
+    auto scaled = std::make_shared<Instance>(mesh, Transform::FromTranslate(0, 0, 300).Scale(scale).RotateY(180));
+    world.push_back(scaled);
+
+    fmt::println("Scaled Mesh BB: {:.3f}", scaled->BoundingBox());
+
+    auto cam = std::make_shared<Camera>(Vector3(0, 278, -800), Vector3(0, 278, 0), 40.0, 1.0);
+
+    return Scene{
+        .objects = BvhNode::Build(world),
+        .camera = cam,
+    };
+}
+
+Scene FlatMeshTest(string file)
+{
+    auto world = EmptyCornellBox();
+    auto mesh = FlatBvh::Mesh::Create(file);
+    fmt::println("Face Count: {}", mesh->FaceCount());
+    fmt::println("BVH Node Count: {}", mesh->BvhNodeCount());
+    auto scale = 250.0 / mesh->BoundingBox().LongestAxis().Length();
+    auto scaled = std::make_shared<Instance>(mesh, Transform::FromTranslate(0, 0, 300).Scale(scale).RotateY(180));
+    world.push_back(scaled);
+
+    fmt::println("Scaled Mesh BB: {:.3f}", scaled->BoundingBox());
+
+    auto cam = std::make_shared<Camera>(Vector3(0, 278, -800), Vector3(0, 278, 0), 40.0, 1.0);
+
+    return Scene{
+        .objects = BvhNode::Build(world),
+        .camera = cam,
+    };
+}
+
+Scene StaticMeshTest(string file)
+{
+    auto world = EmptyCornellBox();
+    auto mesh = StaticBvh::Mesh::Create("assets/stanford-bunny.obj");
     fmt::println("Face Count: {}", mesh->FaceCount());
     auto scale = 250.0 / mesh->BoundingBox().LongestAxis().Length();
     auto scaled = std::make_shared<Instance>(mesh, Transform::FromTranslate(0, 0, 300).Scale(scale).RotateY(180));
@@ -47,10 +87,10 @@ Scene MeshTest(string file, bool useBvh = true)
     };
 }
 
-Scene ObjectAsHittableTest(string file, bool useBvh = true)
+Scene TriangleListTest(string file, bool useBvh = true)
 {
     auto world = EmptyCornellBox();
-    auto faces = LoadAsHittableList(file);
+    auto faces = LoadAsTriangleList(file);
     fmt::println("Face Count: {}", faces->shapes.size());
     shared_ptr<Hittable> mesh = faces;
     if (useBvh)
@@ -71,20 +111,20 @@ Scene ObjectAsHittableTest(string file, bool useBvh = true)
 
 Scene Pyramid(bool useBvh = true)
 {
-    return MeshTest("assets/pyramid.obj", useBvh);
+    return TriangleListTest("assets/pyramid.obj", useBvh);
 }
 
 Scene StanfordBunny(bool useBvh = true)
 {
-    return MeshTest("assets/stanford-bunny.obj", useBvh);
+    return TriangleListTest("assets/stanford-bunny.obj", useBvh);
 }
 
-Scene PyramidAsHittable(bool useBvh = true)
+Scene StanfordBunnyAsStaticMesh()
 {
-    return ObjectAsHittableTest("assets/pyramid.obj", useBvh);
+    return StaticMeshTest("assets/stanford-bunny.obj");
 }
 
-Scene StanfordBunnyAsHittable(bool useBvh = true)
+Scene StanfordBunnyAsFlatMesh()
 {
-    return ObjectAsHittableTest("assets/stanford-bunny.obj", useBvh);
+    return FlatMeshTest("assets/stanford-bunny.obj");
 }
