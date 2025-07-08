@@ -9,7 +9,7 @@
 #include "core/material.h"
 #include "io/object_loader.h"
 
-// BvhNode uses integer indices instead of pointers. 
+// BvhNode uses integer indices instead of pointers.
 // Iterative traversal instead of recursive.
 namespace FlatBvh
 {
@@ -25,49 +25,6 @@ namespace FlatBvh
 
         size_t object_index = INVALID_INDEX;
     };
-
-    bool HitBvhFlatNode(
-        const BvhFlatNode &node,
-        const Point3 &ray_orig,
-        const Vector3 &ray_dir,
-        double t_min,
-        double t_max)
-    {
-
-        for (int axis = 0; axis < 3; axis++)
-        {
-            // check if the ray is parallel to the axis
-            if (std::abs(ray_dir[axis]) < 1e-8)
-            {
-                if (ray_orig[axis] < node.min[axis] || ray_orig[axis] > node.max[axis])
-                    return false;
-                continue;
-            }
-            const double adinv = 1.0 / ray_dir[axis];
-
-            auto t0 = (node.min[axis] - ray_orig[axis]) * adinv;
-            auto t1 = (node.max[axis] - ray_orig[axis]) * adinv;
-
-            if (t0 < t1)
-            {
-                if (t0 > t_min)
-                    t_min = t0;
-                if (t1 < t_max)
-                    t_max = t1;
-            }
-            else
-            {
-                if (t1 > t_min)
-                    t_min = t1;
-                if (t0 < t_max)
-                    t_max = t0;
-            }
-
-            if (t_max <= t_min)
-                return false;
-        }
-        return true;
-    }
 
     bool TraverseFlatBvh(
         const Ray &ray,
@@ -90,7 +47,7 @@ namespace FlatBvh
             const auto isLeaf = node.object_index != INVALID_INDEX;
 
             // check if nodes bounding box  is hit
-            if (!HitBvhFlatNode(node, ray.origin, ray.direction, t_min, t_max))
+            if (!HitAABB(node.min, node.max, ray.origin, ray.direction, t_min, t_max))
                 continue;
 
             // it's a leaf
@@ -178,17 +135,7 @@ namespace FlatBvh
             // This function is an optimization. It doesn't sort the whole array.
             // It only reorders the elements such that all elements left from the n-th element
             // are less than the n-th element and vice versa.
-            // std::nth_element(
-            //     faces.begin() + begin, faces.begin() + mid, faces.begin() + end,
-            //     [axis](const Face &a, const Face &b)
-            //     {
-            //         double a_centroid = (a.v0[axis] + a.v1[axis] + a.v2[axis]) / 3.0;
-            //         double b_centroid = (b.v0[axis] + b.v1[axis] + b.v2[axis]) / 3.0;
-            //         return a_centroid < b_centroid;
-            //     });
-
-            std::sort(faces.begin() + begin, faces.begin() + end, BBCompare(axis));
-            // std::nth_element(faces.begin() + begin, faces.begin() + mid, faces.begin() + end, BoxCompareFlat(axis));
+            std::nth_element(faces.begin() + begin, faces.begin() + mid, faces.begin() + end, BBCompareByMin(axis));
 
             // Push children in reverse order (right first) so left is on top for better memory layout.
             stack.push({mid, end, nodeIndex, false});

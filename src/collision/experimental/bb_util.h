@@ -70,15 +70,72 @@ AABBHelper Union(const std::vector<Face> &faces, size_t begin, size_t end)
     return bbox;
 }
 
-struct BBCompare
+bool HitAABB(
+    const Vector3 &min,
+    const Vector3 &max,
+    const Point3 &ray_orig,
+    const Vector3 &ray_dir,
+    double t_min,
+    double t_max)
+{
+
+    for (int axis = 0; axis < 3; axis++)
+    {
+        // check if the ray is parallel to the axis
+        if (std::abs(ray_dir[axis]) < 1e-8)
+        {
+            if (ray_orig[axis] < min[axis] || ray_orig[axis] > max[axis])
+                return false;
+            continue;
+        }
+        const double adinv = 1.0 / ray_dir[axis];
+
+        auto t0 = (min[axis] - ray_orig[axis]) * adinv;
+        auto t1 = (max[axis] - ray_orig[axis]) * adinv;
+
+        if (t0 < t1)
+        {
+            if (t0 > t_min)
+                t_min = t0;
+            if (t1 < t_max)
+                t_max = t1;
+        }
+        else
+        {
+            if (t1 > t_min)
+                t_min = t1;
+            if (t0 < t_max)
+                t_max = t0;
+        }
+
+        if (t_max <= t_min)
+            return false;
+    }
+    return true;
+}
+
+struct BBCompareByMin
 {
     int index;
-    BBCompare(int idx) : index(idx) {}
+    BBCompareByMin(int idx) : index(idx) {}
 
     bool operator()(const Face &a, const Face &b) const
     {
         auto a_axis_interval = FromFace(a);
         auto b_axis_interval = FromFace(b);
         return a_axis_interval.min[index] < b_axis_interval.min[index];
+    }
+};
+
+struct BBCompareByCentroid
+{
+    int index;
+    BBCompareByCentroid(int idx) : index(idx) {}
+
+    bool operator()(const Face &a, const Face &b) const
+    {
+        double a_centroid = (a.v0[index] + a.v1[index] + a.v2[index]) / 3.0;
+        double b_centroid = (b.v0[index] + b.v1[index] + b.v2[index]) / 3.0;
+        return a_centroid < b_centroid;
     }
 };

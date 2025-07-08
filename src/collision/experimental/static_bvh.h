@@ -32,50 +32,6 @@ namespace StaticBvh
         }
     };
 
-    bool HitAABB(
-        const Vector3 &min,
-        const Vector3 &max,
-        const Point3 &ray_orig,
-        const Vector3 &ray_dir,
-        double t_min,
-        double t_max)
-    {
-
-        for (int axis = 0; axis < 3; axis++)
-        {
-            // check if the ray is parallel to the axis
-            if (std::abs(ray_dir[axis]) < 1e-8)
-            {
-                if (ray_orig[axis] < min[axis] || ray_orig[axis] > max[axis])
-                    return false;
-                continue;
-            }
-            const double adinv = 1.0 / ray_dir[axis];
-
-            auto t0 = (min[axis] - ray_orig[axis]) * adinv;
-            auto t1 = (max[axis] - ray_orig[axis]) * adinv;
-
-            if (t0 < t1)
-            {
-                if (t0 > t_min)
-                    t_min = t0;
-                if (t1 < t_max)
-                    t_max = t1;
-            }
-            else
-            {
-                if (t1 > t_min)
-                    t_min = t1;
-                if (t0 < t_max)
-                    t_max = t0;
-            }
-
-            if (t_max <= t_min)
-                return false;
-        }
-        return true;
-    }
-
     bool Traverse(const Ray &ray, HitResult &hit, double &t_min, double &t_max, FastBvhNode *node, const std::vector<Face> &faces)
     {
         if (node == nullptr)
@@ -151,7 +107,7 @@ namespace StaticBvh
 
         // sort and split faces
         size_t mid = start + count / 2;
-        std::nth_element(faces.begin() + start, faces.begin() + mid, faces.begin() + end, BBCompare(axisId));
+        std::nth_element(faces.begin() + start, faces.begin() + mid, faces.begin() + end, BBCompareByMin(axisId));
 
         n.leftNode = new FastBvhNode();
         n.rightNode = new FastBvhNode();
