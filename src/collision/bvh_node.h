@@ -39,16 +39,6 @@ public:
         return BuildRecursive(shapes, start, end);
     }
 
-    shared_ptr<Hittable> LeftNode() const
-    {
-        return left;
-    }
-
-    shared_ptr<Hittable> RightNode() const
-    {
-        return right;
-    }
-
 private:
     BvhNode(shared_ptr<Hittable> left, shared_ptr<Hittable> right, AABB bbox)
         // standard pattern to avoid creating another copy of the parameters
