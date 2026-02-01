@@ -181,6 +181,19 @@ inline Vector3 RandomOnHemisphere(const Vector3 &normal)
         return -on_unit_sphere;
 }
 
+inline Vector3 RandomCosineDirection()
+{
+    auto r1 = RandomDouble();
+    auto r2 = RandomDouble();
+
+    auto phi = 2 * std::numbers::pi * r1;
+    auto x = std::cos(phi) * std::sqrt(r2);
+    auto y = std::sin(phi) * std::sqrt(r2);
+    auto z = std::sqrt(1 - r2);
+
+    return Vector3(x, y, z);
+}
+
 inline Vector3 Reflect(const Vector3 &v, const Vector3 &n)
 {
     return v - 2 * Dot(v, n) * n;
