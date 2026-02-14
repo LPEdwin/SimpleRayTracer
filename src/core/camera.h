@@ -78,7 +78,7 @@ public:
     // and (0,0) corresponds to the top-left corner of the image.
     Ray GetRay(double u, double v) const
     {
-        Vector3 offset = lensRadius * RandomInUnitDisk();
+        Vector3 offset = lensRadius * RandomInUnitDisc();
         Vector3 newRayOrigin = origin + unitHorizontal * offset.x() + unitVertical * offset.y();
         Vector3 screenPoint = topLeft + u * horizontal + v * vertical;
         double time = (exposureStart == exposureEnd) ? exposureStart : RandomDouble(exposureStart, exposureEnd);

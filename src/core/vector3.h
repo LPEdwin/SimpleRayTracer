@@ -151,7 +151,7 @@ inline Vector3 UnitVector(const Vector3 &v)
     return v / v.Length();
 }
 
-inline Vector3 RandomInUnitDisk()
+inline Vector3 RandomInUnitDisc()
 {
     while (true)
     {
