@@ -12,8 +12,7 @@
 
 #include <cmath>
 #include "core/random.h"
-
-using namespace std;
+#include <numbers>
 
 class Vector3
 {
