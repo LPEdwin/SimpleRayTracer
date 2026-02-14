@@ -56,9 +56,9 @@ private:
             Color attenuation;
             Ray secondaryRay;
             if (hit.material->Scatter(ray, hit, attenuation, secondaryRay))
-                return attenuation * GetColor(secondaryRay, world, currentDepth - 1) + hit.material->Emitted(hit.point, 0, 0);
+                return attenuation * GetColor(secondaryRay, world, currentDepth - 1) + hit.material->Emitted(hit, 0, 0);
 
-            return hit.material->Emitted(hit.point, 0, 0);
+            return hit.material->Emitted(hit, 0, 0);
         }
         return environmentMap ? environmentMap->GetColor(ray) : Color(0, 0, 0);
     }

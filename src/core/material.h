@@ -23,7 +23,8 @@ public:
     {
         return false;
     }
-    virtual Color Emitted(const Point3 &point, double u, double v) const
+
+    virtual Color Emitted(const HitResult &hit, double u, double v) const
     {
         return Color(0.0, 0.0, 0.0);
     }
@@ -34,8 +35,10 @@ class Emissive : public Material
 public:
     Emissive(const Color &emission) : emission(emission) {}
 
-    virtual Color Emitted(const Point3 &point, double u, double v) const override
+    virtual Color Emitted(const HitResult &hit, double u, double v) const override
     {
+        if (!hit.front_face)
+            return Color(0.0, 0.0, 0.0);
         return emission;
     }
 
