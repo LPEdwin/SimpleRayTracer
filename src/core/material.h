@@ -14,12 +14,28 @@
 #include "core/ray.h"
 #include "core/vector3.h"
 #include "core/hittable.h"
+#include "core/onb.h"
+#include "core/sampling_pdf.h"
+
+struct ScatterResult
+{
+    Color Attenuation;
+    std::shared_ptr<SamplingPdf> Sampler;
+    bool IsDeltaDistribution;
+    Ray RayOut;
+};
 
 class Material
 {
 public:
     virtual ~Material() = default;
-    virtual bool Scatter(const Ray &ray_in, const HitResult &hit, Color &attenuation, Ray &ray_out) const
+
+    virtual double Evaluate(const Ray &ray_in, const HitResult &rec, const Ray &ray_scattered) const
+    {
+        return 0.0;
+    }
+
+    virtual bool Scatter(const Ray &ray_in, const HitResult &hit, ScatterResult &scatter_out) const
     {
         return false;
     }
@@ -46,21 +62,23 @@ private:
     Color emission;
 };
 
-// A material that reflects light diffusely preferred in normal directiron by following Lambert's cosine law.
-class Lambertian : public Material
+// A material using cosine weighting for scattered rays with cosine importance samping.
+class LambertianCosine : public Material
 {
 public:
-    Lambertian(const Color &albedo) : albedo(albedo) {}
+    LambertianCosine(const Color &albedo) : albedo(albedo) {}
 
-    bool Scatter(const Ray &ray_in, const HitResult &hit, Color &attenuation, Ray &ray_out) const override
+    double Evaluate(const Ray &ray_in, const HitResult &rec, const Ray &ray_scattered) const override
     {
-        auto scatter_direction = hit.normal + RandomUnitVector();
+        auto cos_theta = Dot(UnitVector(rec.normal), UnitVector(ray_scattered.direction));
+        return cos_theta < 0 ? 0 : cos_theta / std::numbers::pi;
+    }
 
-        if (scatter_direction.NearZero())
-            scatter_direction = hit.normal;
-
-        ray_out = Ray(hit.point, scatter_direction);
-        attenuation = albedo;
+    bool Scatter(const Ray &ray_in, const HitResult &hit, ScatterResult &scatter_out) const override
+    {
+        scatter_out.Sampler = make_shared<CosineHemisphereSampling>(hit.normal);
+        scatter_out.IsDeltaDistribution = false;
+        scatter_out.Attenuation = albedo;
         return true;
     }
 
@@ -68,17 +86,50 @@ private:
     Color albedo;
 };
 
+// A material using cosine weighting for scattered rays with uniform samping.
+class LambertianUniform : public Material
+{
+public:
+    LambertianUniform(const Color &albedo) : albedo(albedo) {}
+
+    double Evaluate(const Ray &ray_in, const HitResult &rec, const Ray &ray_scattered) const override
+    {
+        auto cos_theta = Dot(UnitVector(rec.normal), UnitVector(ray_scattered.direction));
+        return cos_theta < 0 ? 0 : cos_theta / std::numbers::pi;
+    }
+
+    bool Scatter(const Ray &ray_in, const HitResult &hit, ScatterResult &scatter_out) const override
+    {
+        scatter_out.Sampler = make_shared<HemisphereSampling>(hit.normal);
+        scatter_out.IsDeltaDistribution = false;
+        scatter_out.Attenuation = albedo;
+        return true;
+    }
+
+private:
+    Color albedo;
+};
+
+class Lambertian : public LambertianCosine
+{
+public:
+    using LambertianCosine::LambertianCosine;
+};
+
 class Metal : public Material
 {
 public:
     Metal(const Color &albedo, double fuzziness = 0.0) : albedo(albedo), fuzziness(fuzziness) {}
 
-    bool Scatter(const Ray &ray_in, const HitResult &hit, Color &attenuation, Ray &ray_out) const override
+    bool Scatter(const Ray &ray_in, const HitResult &hit, ScatterResult &scatter_out) const override
     {
         auto reflected = Reflect(ray_in.direction, hit.normal);
         reflected = UnitVector(reflected) + (fuzziness * RandomUnitVector());
-        ray_out = Ray(hit.point, reflected);
-        attenuation = albedo;
+
+        scatter_out.Sampler = nullptr;
+        scatter_out.IsDeltaDistribution = true;
+        scatter_out.RayOut = Ray(hit.point, reflected, ray_in.time);
+        scatter_out.Attenuation = albedo;
         return (Dot(reflected, hit.normal) > 0);
     }
 
@@ -98,9 +149,12 @@ class Dielectric : public Material
 public:
     Dielectric(double refraction_index) : refraction_index(refraction_index) {}
 
-    bool Scatter(const Ray &ray_in, const HitResult &hit, Color &attenuation, Ray &ray_out) const override
+    bool Scatter(const Ray &ray_in, const HitResult &hit, ScatterResult &scatter_out) const override
     {
-        attenuation = Color(1.0, 1.0, 1.0);
+        scatter_out.Attenuation = Color(1.0, 1.0, 1.0);
+        scatter_out.Sampler = nullptr;
+        scatter_out.IsDeltaDistribution = true;
+
         double ri = hit.front_face ? (1.0 / refraction_index) : refraction_index;
 
         Vector3 unit_direction = UnitVector(ray_in.direction);
@@ -115,7 +169,7 @@ public:
         else
             direction = Refract(unit_direction, hit.normal, ri);
 
-        ray_out = Ray(hit.point, direction);
+        scatter_out.RayOut = Ray(hit.point, direction, ray_in.time);
         return true;
     }
 

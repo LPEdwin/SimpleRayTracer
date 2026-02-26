@@ -28,11 +28,30 @@ public:
     }
 };
 
-class CosineSampling : public SamplingPdf
+class HemisphereSampling : public SamplingPdf
 {
-    CosineSampling(const Vector3 &w) : uvw(w) {}
-
 public:
+    HemisphereSampling(const Vector3 &w) : w(w) {}
+
+    virtual double PdfValue(const Vector3 &direction) const override
+    {
+        return 1.0 / (2.0 * std::numbers::pi);
+    }
+
+    virtual Vector3 GenerateDirection() const override
+    {
+        return RandomOnHemisphere(w);
+    }
+
+private:
+    Vector3 w;
+};
+
+class CosineHemisphereSampling : public SamplingPdf
+{
+public:
+    CosineHemisphereSampling(const Vector3 &w) : uvw(w) {}
+
     virtual double PdfValue(const Vector3 &direction) const override
     {
         auto cosine_theta = Dot(UnitVector(direction), uvw.w());

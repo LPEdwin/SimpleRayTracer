@@ -53,10 +53,29 @@ private:
         HitResult hit{};
         if (world.Hit(ray, hit, 0.001, inf))
         {
-            Color attenuation;
-            Ray secondaryRay;
-            if (hit.material->Scatter(ray, hit, attenuation, secondaryRay))
-                return attenuation * GetColor(secondaryRay, world, currentDepth - 1) + hit.material->Emitted(hit, 0, 0);
+            ScatterResult scatter_result;
+
+            if (hit.material->Scatter(ray, hit, scatter_result))
+            {
+                if (scatter_result.IsDeltaDistribution)
+                {
+                    auto att = scatter_result.Attenuation;
+                    auto ray_out = scatter_result.RayOut;
+                    return (att * GetColor(ray_out, world, currentDepth - 1)) + hit.material->Emitted(hit, 0, 0);
+                }
+                else
+                {
+                    auto att = scatter_result.Attenuation;
+                    auto &sampler = scatter_result.Sampler;
+                    auto scattered_ray = Ray(hit.point, sampler->GenerateDirection());
+                    if (!scattered_ray.direction.NearZero())
+                    {
+                        auto f_value = hit.material->Evaluate(ray, hit, scattered_ray);
+                        auto pdf = sampler->PdfValue(scattered_ray.direction);
+                        return (att * f_value * GetColor(scattered_ray, world, currentDepth - 1)) / pdf + hit.material->Emitted(hit, 0, 0);
+                    }
+                }
+            }
 
             return hit.material->Emitted(hit, 0, 0);
         }
