@@ -5,7 +5,7 @@
 
 #include "core/vector3.h"
 
-constexpr double DegToRad = std::numbers::pi / 180.0;
+inline constexpr double DegToRad = std::numbers::pi / 180.0;
 
 class Transform
 {
