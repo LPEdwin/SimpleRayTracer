@@ -66,3 +66,32 @@ public:
 private:
     Onb uvw;
 };
+
+class MixtureSampling : public SamplingPdf
+{
+public:
+    MixtureSampling(std::shared_ptr<SamplingPdf> sampler1, std::shared_ptr<SamplingPdf> sampler2)
+        : sampler1(std::move(sampler1)), sampler2(std::move(sampler2)) {}
+
+    virtual double PdfValue(const Vector3 &direction) const override
+    {
+        return p * sampler1->PdfValue(direction) + (1 - p) * sampler2->PdfValue(direction);
+    }
+
+    virtual Vector3 GenerateDirection() const override
+    {
+        if (RandomDouble() < p)
+        {
+            return sampler1->GenerateDirection();
+        }
+        else
+        {
+            return sampler2->GenerateDirection();
+        }
+    }
+
+private:
+    double p = 0.5;
+    std::shared_ptr<SamplingPdf> sampler1;
+    std::shared_ptr<SamplingPdf> sampler2;
+};
