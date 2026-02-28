@@ -41,7 +41,7 @@ int main()
         .samplesPerPixel = 100,
         .maxThreadCount = 0,
         .environmentMap = scene.environmentMap};
-    renderer.Render(image, *scene.camera, *scene.objects);
+    renderer.Render(image, *scene.camera, *scene.objects, *scene.lights);
 
     auto end = steady_clock::now();
     auto duration = duration_cast<seconds>(end - start);

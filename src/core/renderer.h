@@ -27,6 +27,7 @@
 
 #include "core/camera.h"
 #include "collision/sphere.h"
+#include "collision/quad.h"
 #include "io/image.h"
 #include "core/ray.h"
 #include "core/vector3.h"
@@ -43,7 +44,11 @@ public:
     shared_ptr<EnvironmentMap> environmentMap = nullptr;
 
 private:
-    Color GetColor(const Ray &ray, const Hittable &world, int currentDepth) const
+    Color GetColor(
+        const Ray &ray,
+        const Hittable &world,
+        const vector<shared_ptr<Quad>> &lights,
+        int currentDepth) const
     {
         constexpr double inf = std::numeric_limits<double>::infinity();
 
@@ -61,18 +66,20 @@ private:
                 {
                     auto att = scatter_result.Attenuation;
                     auto ray_out = scatter_result.RayOut;
-                    return (att * GetColor(ray_out, world, currentDepth - 1)) + hit.material->Emitted(hit, 0, 0);
+                    return (att * GetColor(ray_out, world, lights, currentDepth - 1)) + hit.material->Emitted(hit, 0, 0);
                 }
                 else
                 {
                     auto att = scatter_result.Attenuation;
-                    auto &sampler = scatter_result.Sampler;
-                    auto scattered_ray = Ray(hit.point, sampler->GenerateDirection());
+                    auto &scatter_sampler = scatter_result.Sampler;
+                    auto light_sampler = std::make_shared<HittableSampling>(*(lights[0]), hit.point);
+                    auto sampler = MixtureSampling(scatter_sampler, light_sampler);
+                    auto scattered_ray = Ray(hit.point, sampler.GenerateDirection());
                     if (!scattered_ray.direction.NearZero())
                     {
                         auto f_value = hit.material->Evaluate(ray, hit, scattered_ray);
-                        auto pdf = sampler->PdfValue(scattered_ray.direction);
-                        return (att * f_value * GetColor(scattered_ray, world, currentDepth - 1)) / pdf + hit.material->Emitted(hit, 0, 0);
+                        auto pdf = sampler.PdfValue(scattered_ray.direction);
+                        return (att * f_value * GetColor(scattered_ray, world, lights, currentDepth - 1)) / pdf + hit.material->Emitted(hit, 0, 0);
                     }
                 }
             }
@@ -85,6 +92,7 @@ private:
     void RenderLine(Image &image,
                     const Camera &camera,
                     const Hittable &world,
+                    const vector<shared_ptr<Quad>> &lights,
                     int line_number,
                     const Vector3 &pixelDelta)
     {
@@ -96,7 +104,7 @@ private:
                 auto sampleOffset = Vector3(RandomDouble() - 0.5, RandomDouble() - 0.5, 0.0);
                 Ray ray = camera.GetRay((x + sampleOffset.x()) * pixelDelta.x(),
                                         (line_number + sampleOffset.y()) * pixelDelta.y());
-                color += GetColor(ray, world, maxDepth);
+                color += GetColor(ray, world, lights, maxDepth);
             }
             image.pixels[line_number][x] = color / samplesPerPixel;
         }
@@ -105,7 +113,8 @@ private:
 public:
     void Render(Image &image,
                 const Camera &camera,
-                const Hittable &world)
+                const Hittable &world,
+                const vector<shared_ptr<Quad>> &lights)
     {
         auto hardwareLimit = std::thread::hardware_concurrency();
         auto threadCount = maxThreadCount = 0 ? 0 : std::min(maxThreadCount, hardwareLimit);
@@ -137,7 +146,7 @@ public:
 #if defined(PPL) && defined(_MSC_VER)
         // MSVC version using PPL's parallel_for
         Concurrency::parallel_for(0, image.height, [&](int y)
-                                  { RenderLine(image, camera, world, y, pixelDelta);
+                                  { RenderLine(image, camera, world, lights, y, pixelDelta);
                                 progressTracker.IncrementLine(); });
 
         if (customScheduler)
@@ -148,7 +157,7 @@ public:
 #else
         // Use TBB parallel_for as default
         tbb::parallel_for(0, image.height, [&](int y)
-                          { RenderLine(image, camera, world, y, pixelDelta); 
+                          { RenderLine(image, camera, world, lights, y, pixelDelta); 
                         progressTracker.IncrementLine(); });
 #endif
     }
