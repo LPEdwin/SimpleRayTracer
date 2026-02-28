@@ -107,7 +107,7 @@ void SaveBmp(const Image &image, const std::string &filename, bool convertToSRGB
         {
             auto clamp = [](float c) -> uint8_t
             {
-                if (c < 0.0f)
+                if (!(c > 0.0f)) // catches NaN and negatives
                     return 0;
                 if (c > 1.0f)
                     return 255;
