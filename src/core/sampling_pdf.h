@@ -67,6 +67,26 @@ private:
     Onb uvw;
 };
 
+class HittableSampling : public SamplingPdf
+{
+public:
+    HittableSampling(const Hittable &objects, const Point3 &origin) : objects(objects), origin(origin) {}
+
+    virtual double PdfValue(const Vector3 &direction) const override
+    {
+        return objects.PdfValue(origin, direction);
+    }
+
+    virtual Vector3 GenerateDirection() const override
+    {
+        return objects.SampleRandomPoint(origin);
+    }
+
+private:
+    const Hittable &objects;
+    Point3 origin;
+};
+
 class MixtureSampling : public SamplingPdf
 {
 public:
