@@ -26,6 +26,7 @@ public:
         normal = UnitVector(n);
         D = Dot(normal, Q);
         w = n / Dot(n, n);
+        area = n.Length();
 
         auto bbox_diagonal1 = AABB(Q, Q + u + v);
         auto bbox_diagonal2 = AABB(Q + u, Q + v);
@@ -65,6 +66,21 @@ public:
         return true;
     }
 
+    virtual double PdfValue(const Point3 &origin, const Vector3 &direction) const override
+    {
+        HitResult hit;
+        if (!this->Hit(Ray(origin, direction), hit, 0.001, std::numeric_limits<double>::infinity()))
+            return 0.0;
+        auto dist_squared = hit.t * hit.t * direction.LengthSquared();
+        auto cosine = std::fabs(Dot(hit.normal, UnitVector(direction)));
+        return dist_squared / (cosine * area);
+    }
+
+    virtual Vector3 SampleRandomPoint(const Point3 &origin) const override
+    {
+        return Q + RandomDouble() * u + RandomDouble() * v - origin;
+    }
+
 private:
     Point3 Q;
     Vector3 u, v;
@@ -73,4 +89,5 @@ private:
     AABB bbox;
     Vector3 normal;
     double D;
+    double area;
 };

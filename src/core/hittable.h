@@ -39,4 +39,14 @@ public:
     virtual ~Hittable() = default;
     virtual bool Hit(const Ray &ray, HitResult &hitResult, double t_min, double t_max) const = 0;
     virtual AABB BoundingBox() const = 0;
+
+    virtual double PdfValue(const Point3 &origin, const Vector3 &direction) const
+    {
+        return 0.0;
+    }
+
+    virtual Vector3 SampleRandomPoint(const Point3 &origin) const
+    {
+        return Vector3(1.0, 0, 0);
+    }
 };
