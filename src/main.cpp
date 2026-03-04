@@ -3,6 +3,15 @@
 #include "fmt/chrono.h"
 #include "fmt/format.h"
 
+#ifdef _MSC_VER
+  #define TINYEXR_USE_MINIZ 1
+#else
+  #define TINYEXR_USE_MINIZ 0
+  #include <zlib.h>
+#endif
+#define TINYEXR_IMPLEMENTATION
+#include "tinyexr/tinyexr.h"
+
 #include <iostream>
 #include <chrono>
 #include <exception>
@@ -12,6 +21,7 @@
 #include "io/image.h"
 #include "scenes/scene.h"
 #include "scenes/cornell_box.h"
+#include "io/exr_save.h"
 
 using namespace std;
 using namespace std::chrono;
@@ -43,9 +53,20 @@ int main()
         SaveBmp_sRGB(image, filename);
         fmt::println("BMP saved to {}", filename);
     }
-    catch (const std::exception &e)
+    catch (const std::exception& e)
     {
-        cerr << "Error writing BMP: " << e.what() << "\n";
+        fmt::println(stderr, "Error writing BMP: {}", e.what());
+    }
+
+    try
+    {
+        auto exrfilename = fmt::format("output_{:%H.%M.%S}.exr", duration);
+        SaveEXRImage(image, exrfilename);
+        fmt::println("EXR saved to {}", exrfilename);
+    }
+    catch (const std::exception& e)
+    {
+        fmt::println(stderr, "Error writing EXR: {}", e.what());
     }
 
     return 0;
