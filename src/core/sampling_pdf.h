@@ -91,16 +91,19 @@ class MixtureSampling : public SamplingPdf
 {
 public:
     MixtureSampling(std::shared_ptr<SamplingPdf> sampler1, std::shared_ptr<SamplingPdf> sampler2)
-        : sampler1(std::move(sampler1)), sampler2(std::move(sampler2)) {}
+        : MixtureSampling(std::move(sampler1), std::move(sampler2), 0.5) {}
+
+    MixtureSampling(std::shared_ptr<SamplingPdf> sampler1, std::shared_ptr<SamplingPdf> sampler2, double weight)
+        : sampler1(std::move(sampler1)), sampler2(std::move(sampler2)), weight(weight) {}
 
     virtual double PdfValue(const Vector3 &direction) const override
     {
-        return p * sampler1->PdfValue(direction) + (1 - p) * sampler2->PdfValue(direction);
+        return weight * sampler1->PdfValue(direction) + (1 - weight) * sampler2->PdfValue(direction);
     }
 
     virtual Vector3 GenerateDirection() const override
     {
-        if (RandomDouble() < p)
+        if (RandomDouble() < weight)
         {
             return sampler1->GenerateDirection();
         }
@@ -111,7 +114,7 @@ public:
     }
 
 private:
-    double p = 0.5;
+    double weight;
     std::shared_ptr<SamplingPdf> sampler1;
     std::shared_ptr<SamplingPdf> sampler2;
 };

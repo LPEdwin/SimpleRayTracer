@@ -42,6 +42,7 @@ public:
     int samplesPerPixel = 100;
     unsigned int maxThreadCount = 0;
     shared_ptr<EnvironmentMap> environmentMap = nullptr;
+    double mixtureSamplingWeight = 0.5;
 
 private:
     Color GetColor(
@@ -73,7 +74,7 @@ private:
                     auto att = scatter_result.Attenuation;
                     auto &scatter_sampler = scatter_result.Sampler;
                     auto light_sampler = std::make_shared<HittableSampling>(*(lights[0]), hit.point);
-                    auto sampler = MixtureSampling(scatter_sampler, light_sampler);
+                    auto sampler = MixtureSampling(scatter_sampler, light_sampler, mixtureSamplingWeight);
                     auto scattered_ray = Ray(hit.point, sampler.GenerateDirection());
                     if (!scattered_ray.direction.NearZero())
                     {

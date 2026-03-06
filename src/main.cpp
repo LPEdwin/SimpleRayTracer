@@ -40,7 +40,8 @@ int main()
         .maxDepth = 50,
         .samplesPerPixel = 100,
         .maxThreadCount = 0,
-        .environmentMap = scene.environmentMap};
+        .environmentMap = scene.environmentMap,
+        .mixtureSamplingWeight = 0.5};
     renderer.Render(image, *scene.camera, *scene.objects, *scene.lights);
 
     auto end = steady_clock::now();
