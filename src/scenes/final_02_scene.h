@@ -38,7 +38,8 @@ Scene FinalScene02()
     world.push_back(BvhNode::Build(boxes1));
 
     auto light = make_shared<Emissive>(Color(7, 7, 7));
-    world.push_back(make_shared<Quad>(Point3(123, 554, 147), Vector3(300, 0, 0), Vector3(0, 0, 265), light));
+    auto quadLight = make_shared<Quad>(Point3(123, 554, 147), Vector3(300, 0, 0), Vector3(0, 0, 265), light);
+    world.push_back(quadLight);
 
     world.push_back(make_shared<Sphere>(Point3(260, 150, 45), 50, make_shared<Dielectric>(1.5)));
     world.push_back(make_shared<Sphere>(Point3(0, 150, 145), 50, make_shared<Metal>(Color(0.8, 0.8, 0.9), 1.0)));
@@ -58,8 +59,12 @@ Scene FinalScene02()
 
     Camera cam(Point3(478, 278, -600), Point3(278, 278, 0), 40, 1.0);
 
-    return Scene{
+    auto scene = Scene{
         .objects = BvhNode::Build(world),
         .camera = make_shared<Camera>(cam),
     };
+    
+    scene.lights->push_back(quadLight);
+
+    return scene;
 }
