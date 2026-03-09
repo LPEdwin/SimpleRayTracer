@@ -163,7 +163,7 @@ public:
                 const vector<shared_ptr<Quad>> &lights)
     {
         auto hardwareLimit = std::thread::hardware_concurrency();
-        auto threadCount = maxThreadCount = 0 ? 0 : std::min(maxThreadCount, hardwareLimit);
+        auto threadCount = maxThreadCount == 0 ? hardwareLimit : std::min(maxThreadCount, hardwareLimit);
         ProgressTracker progressTracker(image.height);
 
 #ifdef PPL
