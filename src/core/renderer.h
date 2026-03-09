@@ -10,6 +10,7 @@
 #include "fmt/chrono.h"
 #include "fmt/format.h"
 #include "fmt/printf.h"
+#include <fmt/color.h>
 
 #include <limits>
 #include <execution>
@@ -73,13 +74,17 @@ private:
                 {
                     auto att = scatter_result.Attenuation;
                     auto &scatter_sampler = scatter_result.Sampler;
-                    auto light_sampler = std::make_shared<HittableSampling>(*(lights[0]), hit.point);
-                    auto sampler = MixtureSampling(scatter_sampler, light_sampler, mixtureSamplingWeight);
-                    auto scattered_ray = Ray(hit.point, sampler.GenerateDirection());
+                    auto sampler = scatter_sampler;
+                    if (lights.size() > 0)
+                    {
+                        auto light_sampler = std::make_shared<HittableSampling>(*(lights[0]), hit.point);
+                        sampler = std::make_shared<MixtureSampling>(scatter_sampler, light_sampler, mixtureSamplingWeight);
+                    }
+                    auto scattered_ray = Ray(hit.point, sampler->GenerateDirection());
                     if (!scattered_ray.direction.NearZero())
                     {
                         auto f_value = hit.material->Evaluate(ray, hit, scattered_ray);
-                        auto pdf = sampler.PdfValue(scattered_ray.direction);
+                        auto pdf = sampler->PdfValue(scattered_ray.direction);
                         return (att * f_value * GetColor(scattered_ray, world, lights, currentDepth - 1)) / pdf + hit.material->Emitted(hit, 0, 0);
                     }
                 }
@@ -162,6 +167,10 @@ public:
                 const Hittable &world,
                 const vector<shared_ptr<Quad>> &lights)
     {
+        if (lights.empty())
+            fmt::print(fg(fmt::color::orange),
+                       "Warning: No lights registered for this scene.\n");
+
         auto hardwareLimit = std::thread::hardware_concurrency();
         auto threadCount = maxThreadCount == 0 ? hardwareLimit : std::min(maxThreadCount, hardwareLimit);
         ProgressTracker progressTracker(image.height);
