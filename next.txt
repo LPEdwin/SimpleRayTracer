@@ -1,0 +1,19 @@
+- finish per type sample count
+- fix near zero wrong accumaltion
+- render other scenes
+- pixel variance test
+- consider different implementation of the scatter struct
+- shadow rays
+- IS write up
+- russian roulette 
+- sobol space renderer
+
+- cache inverse matrices in transform
+- triangle/face hit checked can be improved by returning early if backfacing 
+    - breaks dialectrics => need extra flag on material(?)
+- render different chunks
+- live viewer
+
+- implement Intel Ember
+- Metropolis Light Transport  renderer
+
