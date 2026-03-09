@@ -26,7 +26,7 @@ Scene FinalScene02()
             auto z0 = -1000.0 + j * w;
             auto y0 = 0.0;
             auto x1 = x0 + w;
-            auto y1 = RandomDouble(1, 101);
+            auto y1 = FixedRandomDouble(1, 101);
             auto z1 = z0 + w;
 
             boxes1.push_back(CreateBox(Point3(x0, y0, z0), Point3(x1, y1, z1), ground));
@@ -52,7 +52,7 @@ Scene FinalScene02()
     int ns = 1000;
     for (int j = 0; j < ns; j++)
     {
-        boxes2.push_back(make_shared<Sphere>(Point3::Random(0, 165), 10, white));
+        boxes2.push_back(make_shared<Sphere>(Point3(FixedRandomDouble(0, 165), FixedRandomDouble(0, 165), FixedRandomDouble(0, 165)), 10, white));
     }
 
     world.push_back(make_shared<Instance>(BvhNode::Build(boxes2), Transform::FromRotateY(15).Translate(Vector3(-100, 270, 395))));
@@ -63,7 +63,7 @@ Scene FinalScene02()
         .objects = BvhNode::Build(world),
         .camera = make_shared<Camera>(cam),
     };
-    
+
     scene.lights->push_back(quadLight);
 
     return scene;
