@@ -1,6 +1,7 @@
 - finish per type sample count
 - fix near zero wrong accumaltion
 - render other scenes
+- sampling for multiple quad lights
 - pixel variance test
 - consider different implementation of the scatter struct
 - shadow rays
