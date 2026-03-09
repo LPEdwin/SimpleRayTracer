@@ -4,10 +4,10 @@
 #include "fmt/format.h"
 
 #ifdef _MSC_VER
-  #define TINYEXR_USE_MINIZ 1
+#define TINYEXR_USE_MINIZ 1
 #else
-  #define TINYEXR_USE_MINIZ 0
-  #include <zlib.h>
+#define TINYEXR_USE_MINIZ 0
+#include <zlib.h>
 #endif
 #define TINYEXR_IMPLEMENTATION
 #include "tinyexr/tinyexr.h"
@@ -37,8 +37,8 @@ int main()
 
     auto start = steady_clock::now();
     Renderer renderer{
-        .maxDepth = 50,
-        .samplesPerPixel = 100,
+        .maxDepth = 10,
+        .samplesPerPixelSqrt = 10,
         .maxThreadCount = 0,
         .environmentMap = scene.environmentMap,
         .mixtureSamplingWeight = 0.5};
@@ -54,7 +54,7 @@ int main()
         SaveBmp_sRGB(image, filename);
         fmt::println("BMP saved to {}", filename);
     }
-    catch (const std::exception& e)
+    catch (const std::exception &e)
     {
         fmt::println(stderr, "Error writing BMP: {}", e.what());
     }
@@ -65,7 +65,7 @@ int main()
         SaveEXRImage(image, exrfilename);
         fmt::println("EXR saved to {}", exrfilename);
     }
-    catch (const std::exception& e)
+    catch (const std::exception &e)
     {
         fmt::println(stderr, "Error writing EXR: {}", e.what());
     }

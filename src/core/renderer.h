@@ -39,7 +39,7 @@ class Renderer
 {
 public:
     int maxDepth = 50;
-    int samplesPerPixel = 100;
+    int samplesPerPixelSqrt = 10;
     unsigned int maxThreadCount = 0;
     shared_ptr<EnvironmentMap> environmentMap = nullptr;
     double mixtureSamplingWeight = 0.5;
@@ -90,6 +90,7 @@ private:
         return environmentMap ? environmentMap->GetColor(ray) : Color(0, 0, 0);
     }
 
+    // Renders the scanline stratefied.
     void RenderLine(Image &image,
                     const Camera &camera,
                     const Hittable &world,
@@ -97,17 +98,61 @@ private:
                     int line_number,
                     const Vector3 &pixelDelta)
     {
+        const double pixelWidth = pixelDelta.x();
+        const double pixelHeight = pixelDelta.y();
+        const double subPixelWidth = pixelWidth / samplesPerPixelSqrt;
+        const double subPixelHeight = pixelHeight / samplesPerPixelSqrt;
+        const double baseV = line_number * pixelHeight;
+
+        for (int w = 0; w < image.width; ++w)
+        {
+            Color color(0, 0, 0);
+            const double baseU = w * pixelWidth;
+
+            for (int i = 0; i < samplesPerPixelSqrt; ++i)
+            {
+                for (int j = 0; j < samplesPerPixelSqrt; ++j)
+                {
+                    // jitter
+                    auto jx = RandomDouble();
+                    auto jy = RandomDouble();
+
+                    auto u = baseU + (i + jx) * subPixelWidth;
+                    auto v = baseV + (j + jy) * subPixelHeight;
+
+                    Ray ray = camera.GetRay(u, v);
+                    color += GetColor(ray, world, lights, maxDepth);
+                }
+            }
+            image.pixels[line_number][w] = color / (samplesPerPixelSqrt * samplesPerPixelSqrt);
+        }
+    }
+
+    void RenderScanlineJittered(Image &image,
+                                const Camera &camera,
+                                const Hittable &world,
+                                const vector<shared_ptr<Quad>> &lights,
+                                int line_number,
+                                const Vector3 &pixelDelta)
+    {
+        const int N = samplesPerPixelSqrt * samplesPerPixelSqrt;
+        const double pixelWidth = pixelDelta.x();
+        const double pixelHeight = pixelDelta.y();
+
         for (int x = 0; x < image.width; ++x)
         {
             Color color(0, 0, 0);
-            for (int s = 0; s < samplesPerPixel; ++s)
+            for (int s = 0; s < samplesPerPixelSqrt; ++s)
             {
-                auto sampleOffset = Vector3(RandomDouble() - 0.5, RandomDouble() - 0.5, 0.0);
-                Ray ray = camera.GetRay((x + sampleOffset.x()) * pixelDelta.x(),
-                                        (line_number + sampleOffset.y()) * pixelDelta.y());
+                // jitter
+                auto jx = RandomDouble();
+                auto jy = RandomDouble();
+
+                Ray ray = camera.GetRay((x + jx) * pixelWidth,
+                                        (line_number + jy) * pixelHeight);
                 color += GetColor(ray, world, lights, maxDepth);
             }
-            image.pixels[line_number][x] = color / samplesPerPixel;
+            image.pixels[line_number][x] = color / samplesPerPixelSqrt;
         }
     }
 
