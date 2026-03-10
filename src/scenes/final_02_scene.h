@@ -2,6 +2,7 @@
 
 #include "core/hittable.h"
 #include "collision/quad.h"
+#include "collision/sphere.h"
 #include "core/camera.h"
 #include "core/material.h"
 #include "scenes/scene.h"
