@@ -24,6 +24,12 @@ inline double RandomDouble(double min, double max)
     return min + (max - min) * RandomDouble();
 }
 
+inline int RandomInt(int min, int max)
+{
+    static thread_local std::uniform_int_distribution<int> dist;
+    return dist(GlobalRng(), decltype(dist)::param_type{min, max});
+}
+
 inline std::mt19937 &FixedRng()
 {
     static thread_local std::mt19937 rng(1337);
