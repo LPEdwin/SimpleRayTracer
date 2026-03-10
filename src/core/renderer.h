@@ -43,7 +43,6 @@ public:
     int samplesPerPixelSqrt = 10;
     unsigned int maxThreadCount = 0;
     shared_ptr<EnvironmentMap> environmentMap = nullptr;
-    double mixtureSamplingWeight = 0.5;
 
 private:
     Color GetColor(
