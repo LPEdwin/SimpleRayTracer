@@ -73,18 +73,17 @@ private:
                 else
                 {
                     auto att = scatter_result.Attenuation;
-                    auto &scatter_sampler = scatter_result.Sampler;
-                    auto sampler = scatter_sampler;
-                    if (lights.size() > 0)
+                    std::vector<std::shared_ptr<SamplingPdf>> samplers{scatter_result.Sampler};
+                    for (const auto &light : lights)
                     {
-                        auto light_sampler = std::make_shared<HittableSampling>(*(lights[0]), hit.point);
-                        sampler = std::make_shared<MixtureSampling>(scatter_sampler, light_sampler, mixtureSamplingWeight);
+                        samplers.push_back(std::make_shared<HittableSampling>(*light, hit.point));
                     }
-                    auto scattered_ray = Ray(hit.point, sampler->GenerateDirection());
+                    auto mixtureSampler = std::make_shared<MixtureSampling>(samplers);
+                    auto scattered_ray = Ray(hit.point, mixtureSampler->GenerateDirection());
                     if (!scattered_ray.direction.NearZero())
                     {
                         auto f_value = hit.material->Evaluate(ray, hit, scattered_ray);
-                        auto pdf = sampler->PdfValue(scattered_ray.direction);
+                        auto pdf = mixtureSampler->PdfValue(scattered_ray.direction);
                         return (att * f_value * GetColor(scattered_ray, world, lights, currentDepth - 1)) / pdf + hit.material->Emitted(hit, 0, 0);
                     }
                 }

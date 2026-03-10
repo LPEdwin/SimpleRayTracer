@@ -90,31 +90,26 @@ private:
 class MixtureSampling : public SamplingPdf
 {
 public:
-    MixtureSampling(std::shared_ptr<SamplingPdf> sampler1, std::shared_ptr<SamplingPdf> sampler2)
-        : MixtureSampling(std::move(sampler1), std::move(sampler2), 0.5) {}
-
-    MixtureSampling(std::shared_ptr<SamplingPdf> sampler1, std::shared_ptr<SamplingPdf> sampler2, double weight)
-        : sampler1(std::move(sampler1)), sampler2(std::move(sampler2)), weight(weight) {}
+    MixtureSampling(std::vector<std::shared_ptr<SamplingPdf>> samplers)
+        : samplers(std::move(samplers))
+    {
+        if (this->samplers.empty())
+            throw std::invalid_argument("Argument samplers can't be empty.");
+    }
 
     virtual double PdfValue(const Vector3 &direction) const override
     {
-        return weight * sampler1->PdfValue(direction) + (1 - weight) * sampler2->PdfValue(direction);
+        auto sum = 0.0;
+        for (const auto &s : samplers)
+            sum += s->PdfValue(direction);
+        return sum / samplers.size();
     }
 
     virtual Vector3 GenerateDirection() const override
     {
-        if (RandomDouble() < weight)
-        {
-            return sampler1->GenerateDirection();
-        }
-        else
-        {
-            return sampler2->GenerateDirection();
-        }
+        return samplers[RandomInt(0, samplers.size() - 1)]->GenerateDirection();
     }
 
 private:
-    double weight;
-    std::shared_ptr<SamplingPdf> sampler1;
-    std::shared_ptr<SamplingPdf> sampler2;
+    std::vector<std::shared_ptr<SamplingPdf>> samplers;
 };
