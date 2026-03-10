@@ -1,13 +1,12 @@
 - finish per type sample count
 - fix near zero wrong accumaltion
-- render other scenes
-- sampling for multiple quad lights
 - pixel variance test
-- consider different implementation of the scatter struct
-- shadow rays
 - IS write up
 - russian roulette 
 - sobol space renderer
+- consider different implementation of the scatter struct
+- shadow rays
+
 
 - cache inverse matrices in transform
 - triangle/face hit checked can be improved by returning early if backfacing 
