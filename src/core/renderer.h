@@ -36,11 +36,21 @@
 #include "io/progress_tracker.h"
 #include "core/environment_map.h"
 
+struct DepthStruct
+{
+    int diffuseDepth;
+    int specularDepth;
+};
+
 class Renderer
 {
 public:
-    int maxDepth = 50;
+    int maxDepth = 10;
     int samplesPerPixelSqrt = 10;
+    int diffuseSamples = 3;
+    int maxDiffuseDepth = 3;
+    int specularSamples = 3;
+    int maxSpecularDepth = 3;
     unsigned int maxThreadCount = 0;
     shared_ptr<EnvironmentMap> environmentMap = nullptr;
 
@@ -49,11 +59,12 @@ private:
         const Ray &ray,
         const Hittable &world,
         const vector<shared_ptr<Quad>> &lights,
-        int currentDepth) const
+        DepthStruct currentDepth) const
     {
         constexpr double inf = std::numeric_limits<double>::infinity();
 
-        if (currentDepth <= 0)
+        if (currentDepth.diffuseDepth >= maxDiffuseDepth || currentDepth.specularDepth >= maxSpecularDepth ||
+            currentDepth.diffuseDepth + currentDepth.specularDepth >= maxDepth)
             return Color(0, 0, 0);
 
         HitResult hit{};
@@ -67,7 +78,8 @@ private:
                 {
                     auto att = scatter_result.Attenuation;
                     auto ray_out = scatter_result.RayOut;
-                    return (att * GetColor(ray_out, world, lights, currentDepth - 1)) + hit.material->Emitted(hit, 0, 0);
+                    currentDepth.specularDepth++;
+                    return (att * GetColor(ray_out, world, lights, currentDepth)) + hit.material->Emitted(hit, 0, 0);
                 }
                 else
                 {
@@ -83,7 +95,8 @@ private:
                     {
                         auto f_value = hit.material->Evaluate(ray, hit, scattered_ray);
                         auto pdf = mixtureSampler->PdfValue(scattered_ray.direction);
-                        return (att * f_value * GetColor(scattered_ray, world, lights, currentDepth - 1)) / pdf + hit.material->Emitted(hit, 0, 0);
+                        currentDepth.diffuseDepth++;
+                        return (att * f_value * GetColor(scattered_ray, world, lights, currentDepth)) / pdf + hit.material->Emitted(hit, 0, 0);
                     }
                 }
             }
@@ -124,7 +137,7 @@ private:
                     auto v = baseV + (j + jy) * subPixelHeight;
 
                     Ray ray = camera.GetRay(u, v);
-                    color += GetColor(ray, world, lights, maxDepth);
+                    color += GetColor(ray, world, lights, DepthStruct());
                 }
             }
             image.pixels[line_number][w] = color / (samplesPerPixelSqrt * samplesPerPixelSqrt);
@@ -153,7 +166,7 @@ private:
 
                 Ray ray = camera.GetRay((x + jx) * pixelWidth,
                                         (line_number + jy) * pixelHeight);
-                color += GetColor(ray, world, lights, maxDepth);
+                color += GetColor(ray, world, lights, DepthStruct());
             }
             image.pixels[line_number][x] = color / samplesPerPixelSqrt;
         }
