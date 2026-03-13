@@ -35,12 +35,20 @@ int main()
     fmt::println("Image size: {} x {}", width, height);
     Image image(width, height);
 
-    auto start = steady_clock::now();
+    SetGlobalRandomSeed(1337);
+
     Renderer renderer{
-        .maxDepth = 10,
-        .samplesPerPixelSqrt = 10,
+        .maxDepth = 50,
+        .samplesPerPixelSqrt = 9,
+        .diffuseSamples = 1,
+        .maxDiffuseDepth = 50,
+        .specularSamples = 1,
+        .maxSpecularDepth = 50,
         .maxThreadCount = 0,
         .environmentMap = scene.environmentMap};
+
+    auto start = steady_clock::now();
+
     renderer.Render(image, *scene.camera, *scene.objects, *scene.lights);
 
     auto end = steady_clock::now();

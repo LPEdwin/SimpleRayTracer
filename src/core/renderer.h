@@ -40,17 +40,22 @@ struct DepthStruct
 {
     int diffuseDepth;
     int specularDepth;
+
+    int totalDepth() const
+    {
+        return diffuseDepth + specularDepth;
+    }
 };
 
 class Renderer
 {
 public:
-    int maxDepth = 10;
+    int maxDepth = 50;
     int samplesPerPixelSqrt = 10;
-    int diffuseSamples = 3;
-    int maxDiffuseDepth = 3;
-    int specularSamples = 3;
-    int maxSpecularDepth = 3;
+    int diffuseSamples = 1;
+    int maxDiffuseDepth = 50;
+    int specularSamples = 1;
+    int maxSpecularDepth = 50;
     unsigned int maxThreadCount = 0;
     shared_ptr<EnvironmentMap> environmentMap = nullptr;
 
@@ -64,46 +69,59 @@ private:
         constexpr double inf = std::numeric_limits<double>::infinity();
 
         if (currentDepth.diffuseDepth >= maxDiffuseDepth || currentDepth.specularDepth >= maxSpecularDepth ||
-            currentDepth.diffuseDepth + currentDepth.specularDepth >= maxDepth)
+            currentDepth.totalDepth() >= maxDepth)
             return Color(0, 0, 0);
 
         HitResult hit{};
-        if (world.Hit(ray, hit, 0.001, inf))
-        {
-            ScatterResult scatter_result;
+        if (!world.Hit(ray, hit, 0.001, inf))
+            return environmentMap ? environmentMap->GetColor(ray) : Color(0, 0, 0);
 
-            if (hit.material->Scatter(ray, hit, scatter_result))
+        ScatterResult scatter_result;
+        if (!hit.material->Scatter(ray, hit, scatter_result))
+            return hit.material->Emitted(hit, 0, 0);
+
+        auto color = Color(0, 0, 0);
+        if (scatter_result.IsDeltaDistribution)
+        {
+            // Specular path
+            auto att = scatter_result.Attenuation;
+            auto ray_out = scatter_result.RayOut;
+            auto nextDepth = currentDepth;
+            nextDepth.specularDepth++;
+            auto samples = currentDepth.totalDepth() == 0 ? specularSamples : 1;
+            for (int i = 0; i < samples; ++i)
             {
-                if (scatter_result.IsDeltaDistribution)
+                color += (att * GetColor(ray_out, world, lights, nextDepth));
+            }
+            color /= samples;
+        }
+        else
+        {
+            // Diffuse path
+            auto att = scatter_result.Attenuation;
+            std::vector<std::shared_ptr<SamplingPdf>> samplers{scatter_result.Sampler};
+            for (const auto &light : lights)
+            {
+                samplers.push_back(std::make_shared<HittableSampling>(*light, hit.point));
+            }
+            auto mixtureSampler = std::make_shared<MixtureSampling>(samplers);
+            auto samples = currentDepth.totalDepth() == 0 ? diffuseSamples : 1;
+            for (int i = 0; i < samples; ++i)
+            {
+                auto scattered_ray = Ray(hit.point, mixtureSampler->GenerateDirection());
+                if (!scattered_ray.direction.NearZero())
                 {
-                    auto att = scatter_result.Attenuation;
-                    auto ray_out = scatter_result.RayOut;
-                    currentDepth.specularDepth++;
-                    return (att * GetColor(ray_out, world, lights, currentDepth)) + hit.material->Emitted(hit, 0, 0);
-                }
-                else
-                {
-                    auto att = scatter_result.Attenuation;
-                    std::vector<std::shared_ptr<SamplingPdf>> samplers{scatter_result.Sampler};
-                    for (const auto &light : lights)
-                    {
-                        samplers.push_back(std::make_shared<HittableSampling>(*light, hit.point));
-                    }
-                    auto mixtureSampler = std::make_shared<MixtureSampling>(samplers);
-                    auto scattered_ray = Ray(hit.point, mixtureSampler->GenerateDirection());
-                    if (!scattered_ray.direction.NearZero())
-                    {
-                        auto f_value = hit.material->Evaluate(ray, hit, scattered_ray);
-                        auto pdf = mixtureSampler->PdfValue(scattered_ray.direction);
-                        currentDepth.diffuseDepth++;
-                        return (att * f_value * GetColor(scattered_ray, world, lights, currentDepth)) / pdf + hit.material->Emitted(hit, 0, 0);
-                    }
+                    auto f_value = hit.material->Evaluate(ray, hit, scattered_ray);
+                    auto pdf = mixtureSampler->PdfValue(scattered_ray.direction);
+                    auto nextDepth = currentDepth;
+                    nextDepth.diffuseDepth++;
+                    color += (att * f_value * GetColor(scattered_ray, world, lights, nextDepth)) / pdf;
                 }
             }
-
-            return hit.material->Emitted(hit, 0, 0);
+            color /= samples;
         }
-        return environmentMap ? environmentMap->GetColor(ray) : Color(0, 0, 0);
+
+        return color + hit.material->Emitted(hit, 0, 0);
     }
 
     // Renders the scanline stratefied.
