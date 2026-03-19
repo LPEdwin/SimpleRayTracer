@@ -74,7 +74,7 @@ private:
             Color color(0, 0, 0);
             for (int s = 0; s < samplesPerPixel; ++s)
             {
-                auto sampleOffset = Vector3(RandomDouble() - 0.5, RandomDouble() - 0.5, 0.0);
+                auto sampleOffset = Vector3(RandomDouble(), RandomDouble(), 0.0);
                 Ray ray = camera.GetRay((x + sampleOffset.x()) * pixelDelta.x(),
                                         (line_number + sampleOffset.y()) * pixelDelta.y());
                 color += GetColor(ray, world, maxDepth);
