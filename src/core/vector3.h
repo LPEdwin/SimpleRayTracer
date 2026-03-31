@@ -133,6 +133,13 @@ inline Vector3 operator/(const Vector3 &v, double t)
     return (1 / t) * v;
 }
 
+inline bool operator==(const Vector3 &a, const Vector3 &b)
+{
+    return a.x() == b.x() &&
+           a.y() == b.y() &&
+           a.z() == b.z();
+}
+
 inline double Dot(const Vector3 &u, const Vector3 &v)
 {
     return u.e[0] * v.e[0] + u.e[1] * v.e[1] + u.e[2] * v.e[2];
