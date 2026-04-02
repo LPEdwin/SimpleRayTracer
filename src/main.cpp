@@ -38,13 +38,13 @@ int main()
     SetGlobalRandomSeed(1337);
 
     Renderer renderer{
-        .maxDepth = 50,
-        .samplesPerPixelSqrt = 9,
-        .diffuseSamples = 1,
-        .maxDiffuseDepth = 50,
-        .specularSamples = 1,
-        .maxSpecularDepth = 50,
-        .maxThreadCount = 0,
+        .MaxDepth = 10,
+        .SamplesPerPixelSqrt = 8,
+        .ShadowRays = 2,
+        .DiffuseSamples = 3,
+        .MaxDiffuseDepth = 50,
+        .MaxSpecularDepth = 50,
+        .MaxThreadCount = 0,
         .environmentMap = scene.environmentMap};
 
     auto start = steady_clock::now();

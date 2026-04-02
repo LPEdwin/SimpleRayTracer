@@ -18,6 +18,7 @@
 #include <iostream>
 #include <ranges>
 #include <thread>
+#include <stdexcept>
 
 #ifdef PPL
 #include <ppl.h>
@@ -36,27 +37,30 @@
 #include "io/progress_tracker.h"
 #include "core/environment_map.h"
 
-struct DepthStruct
-{
-    int diffuseDepth;
-    int specularDepth;
+constexpr double Infinity = std::numeric_limits<double>::infinity();
 
-    int totalDepth() const
+struct PathState
+{
+    int DiffuseDepth;
+    int SpecularDepth;
+
+    int TotalDepth() const
     {
-        return diffuseDepth + specularDepth;
+        return DiffuseDepth + SpecularDepth;
     }
 };
 
 class Renderer
 {
 public:
-    int maxDepth = 50;
-    int samplesPerPixelSqrt = 10;
-    int diffuseSamples = 1;
-    int maxDiffuseDepth = 50;
-    int specularSamples = 1;
-    int maxSpecularDepth = 50;
-    unsigned int maxThreadCount = 0;
+    int MaxDepth = 50;
+    int SamplesPerPixelSqrt = 10;
+    int ShadowRays = 2;
+    int DiffuseSamples = 1;
+    int MaxDiffuseDepth = 50;
+    int SpecularSamples = 1;
+    int MaxSpecularDepth = 50;
+    unsigned int MaxThreadCount = 0;
     shared_ptr<EnvironmentMap> environmentMap = nullptr;
 
 private:
@@ -64,64 +68,130 @@ private:
         const Ray &ray,
         const Hittable &world,
         const vector<shared_ptr<Quad>> &lights,
-        DepthStruct currentDepth) const
+        PathState currentDepth) const
     {
-        constexpr double inf = std::numeric_limits<double>::infinity();
-
-        if (currentDepth.diffuseDepth >= maxDiffuseDepth || currentDepth.specularDepth >= maxSpecularDepth ||
-            currentDepth.totalDepth() >= maxDepth)
+        if (currentDepth.DiffuseDepth >= MaxDiffuseDepth ||
+            currentDepth.SpecularDepth >= MaxSpecularDepth ||
+            currentDepth.TotalDepth() >= MaxDepth)
             return Color(0, 0, 0);
 
-        HitResult hit{};
-        if (!world.Hit(ray, hit, 0.001, inf))
+        HitResult hit;
+        if (!world.Hit(ray, hit, 0.001, Infinity))
             return environmentMap ? environmentMap->GetColor(ray) : Color(0, 0, 0);
 
-        ScatterResult scatter_result;
-        if (!hit.material->Scatter(ray, hit, scatter_result))
-            return hit.material->Emitted(hit, 0, 0);
+        auto emission = hit.material->Emitted(hit, 0, 0);
+        auto specular = Color(0, 0, 0);
+        auto direct = Color(0, 0, 0);
+        auto indirect = Color(0, 0, 0);
 
-        auto color = Color(0, 0, 0);
-        if (scatter_result.IsDeltaDistribution)
+        ScatterResult scatterResult;
+        if (!hit.material->Scatter(ray, hit, scatterResult))
+            return emission;
+
+        auto att = scatterResult.Attenuation;
+
+        if (scatterResult.IsDeltaDistribution)
         {
             // Specular path
-            auto att = scatter_result.Attenuation;
-            auto ray_out = scatter_result.RayOut;
+            auto ray_out = scatterResult.RayOut;
             auto nextDepth = currentDepth;
-            nextDepth.specularDepth++;
-            auto samples = currentDepth.totalDepth() == 0 ? specularSamples : 1;
+            nextDepth.SpecularDepth++;
+            auto samples = currentDepth.TotalDepth() == 0 ? SpecularSamples : 1;
             for (int i = 0; i < samples; ++i)
             {
-                color += (att * GetColor(ray_out, world, lights, nextDepth));
+                specular += (att * GetColor(ray_out, world, lights, nextDepth));
             }
-            color /= samples;
+            specular /= samples;
         }
         else
         {
-            // Diffuse path
-            auto att = scatter_result.Attenuation;
-            std::vector<std::shared_ptr<SamplingPdf>> samplers{scatter_result.Sampler};
-            for (const auto &light : lights)
+            // Direct Light
+            // aka Shadow Rays
+            // aka Light Sampling
+            // aka Next Event Estimation (NEE)
+
+            // TODO: Overlapping lights aren't handled correctly.
+            // Currrently we sample the light and only need to calculate the pdf value depending on the angle.
+            // With multiple lights we have to check if another light couldn't have produced the same direction as well.
+            auto lightSampler = std::make_shared<HittableSampling>(*(lights)[0], hit.point);
+            const int n_light = currentDepth.TotalDepth() == 0 ? ShadowRays : 1;
+            const int n_diffuse = currentDepth.TotalDepth() == 0 ? DiffuseSamples : 1;
+
+            for (int i = 0; i < n_light; ++i)
             {
-                samplers.push_back(std::make_shared<HittableSampling>(*light, hit.point));
-            }
-            auto mixtureSampler = std::make_shared<MixtureSampling>(samplers);
-            auto samples = currentDepth.totalDepth() == 0 ? diffuseSamples : 1;
-            for (int i = 0; i < samples; ++i)
-            {
-                auto scattered_ray = Ray(hit.point, mixtureSampler->GenerateDirection());
-                if (!scattered_ray.direction.NearZero())
+                auto lightDir = lightSampler->GenerateDirection();
+                auto p_light = lightSampler->PdfValue(lightDir);
+                auto p_bsdf = scatterResult.Sampler->PdfValue(lightDir);
+                auto w = PowerHeuristic(n_light, p_light, n_diffuse, p_bsdf);
+
+                auto lightRay = Ray(hit.point, lightDir);
+
+                Color lightEmission;
+                if (HitLight(lightRay, world, *(lights.at(0)), Infinity, lightEmission))
                 {
-                    auto f_value = hit.material->Evaluate(ray, hit, scattered_ray);
-                    auto pdf = mixtureSampler->PdfValue(scattered_ray.direction);
-                    auto nextDepth = currentDepth;
-                    nextDepth.diffuseDepth++;
-                    color += (att * f_value * GetColor(scattered_ray, world, lights, nextDepth)) / pdf;
+                    auto f_value = hit.material->Evaluate(ray, hit, lightRay);
+                    direct += w * (att * f_value * lightEmission) / (n_light * p_light);
                 }
             }
-            color /= samples;
+
+            // Diffuse path
+            int retries = 0;
+            for (int i = 0; i < n_diffuse; ++i)
+            {
+                auto scatterDir = scatterResult.Sampler->GenerateDirection();
+                auto scatterRay = Ray(hit.point, scatterDir);
+                if (!scatterDir.NearZero())
+                {
+                    auto p_light = lightSampler->PdfValue(scatterDir);
+                    auto p_bsdf = scatterResult.Sampler->PdfValue(scatterDir);
+                    auto f_value = hit.material->Evaluate(ray, hit, scatterRay);
+                    auto nextDepth = currentDepth;
+                    nextDepth.DiffuseDepth++;
+                    Color lightEmission;
+                    if (!HitLight(scatterRay, world, *(lights.at(0)), Infinity, lightEmission))
+                    {
+                        // If no light was accidentally hit no MIS weights are needed.
+                        indirect += (att * f_value * GetColor(scatterRay, world, lights, nextDepth)) / (n_diffuse * p_bsdf);
+                    }
+                    else
+                    {
+                        auto w = PowerHeuristic(n_diffuse, p_bsdf, n_light, p_light);
+                        // The MIS weight w only applies to the direct light component of GetColor(...).       
+                        // Using a trick by subtracting the directLight first and adding the w weigthed directLight again.
+                        // split = w*directLight + GetColor(...) - directLight
+                        // TODO: Actually breaks if the direct light calculation isn't deterministic e.g. if using random fluctuations.
+                        auto split = (w - 1) * lightEmission + GetColor(scatterRay, world, lights, nextDepth);
+                        indirect += (att * f_value * split) / (n_diffuse * p_bsdf);
+                    }
+                }
+                else if (retries++ < 10)
+                {
+                    i--;
+                }
+            }
+        }
+        return emission + specular + direct + indirect;
+    }
+
+    // Todo: Reimplement and actually test if the correct light was hit.
+    bool HitLight(const Ray &ray, const Hittable &world, const Quad &light, double maxDistance, Color &emission) const
+    {
+        HitResult hit;
+        if (!world.Hit(ray, hit, 0.001, maxDistance))
+        {
+            return false;
         }
 
-        return color + hit.material->Emitted(hit, 0, 0);
+        emission = hit.material->Emitted(hit, 0, 0);
+        return emission != Color(0, 0, 0);
+    }
+
+    double PowerHeuristic(int nA, double pA, int nB, double pB) const
+    {
+        double a = nA * pA;
+        double b = nB * pB;
+        double denom = (a * a + b * b);
+        return denom > 0.0 ? (a * a) / denom : 0.0;
     }
 
     // Renders the scanline stratefied.
@@ -134,8 +204,8 @@ private:
     {
         const double pixelWidth = pixelDelta.x();
         const double pixelHeight = pixelDelta.y();
-        const double subPixelWidth = pixelWidth / samplesPerPixelSqrt;
-        const double subPixelHeight = pixelHeight / samplesPerPixelSqrt;
+        const double subPixelWidth = pixelWidth / SamplesPerPixelSqrt;
+        const double subPixelHeight = pixelHeight / SamplesPerPixelSqrt;
         const double baseV = line_number * pixelHeight;
 
         for (int w = 0; w < image.width; ++w)
@@ -143,9 +213,9 @@ private:
             Color color(0, 0, 0);
             const double baseU = w * pixelWidth;
 
-            for (int i = 0; i < samplesPerPixelSqrt; ++i)
+            for (int i = 0; i < SamplesPerPixelSqrt; ++i)
             {
-                for (int j = 0; j < samplesPerPixelSqrt; ++j)
+                for (int j = 0; j < SamplesPerPixelSqrt; ++j)
                 {
                     // jitter
                     auto jx = RandomDouble();
@@ -155,10 +225,10 @@ private:
                     auto v = baseV + (j + jy) * subPixelHeight;
 
                     Ray ray = camera.GetRay(u, v);
-                    color += GetColor(ray, world, lights, DepthStruct());
+                    color += GetColor(ray, world, lights, PathState());
                 }
             }
-            image.pixels[line_number][w] = color / (samplesPerPixelSqrt * samplesPerPixelSqrt);
+            image.pixels[line_number][w] = color / (SamplesPerPixelSqrt * SamplesPerPixelSqrt);
         }
     }
 
@@ -169,14 +239,14 @@ private:
                                 int line_number,
                                 const Vector3 &pixelDelta)
     {
-        const int N = samplesPerPixelSqrt * samplesPerPixelSqrt;
+        const int N = SamplesPerPixelSqrt * SamplesPerPixelSqrt;
         const double pixelWidth = pixelDelta.x();
         const double pixelHeight = pixelDelta.y();
 
         for (int x = 0; x < image.width; ++x)
         {
             Color color(0, 0, 0);
-            for (int s = 0; s < samplesPerPixelSqrt; ++s)
+            for (int s = 0; s < SamplesPerPixelSqrt; ++s)
             {
                 // jitter
                 auto jx = RandomDouble();
@@ -184,9 +254,9 @@ private:
 
                 Ray ray = camera.GetRay((x + jx) * pixelWidth,
                                         (line_number + jy) * pixelHeight);
-                color += GetColor(ray, world, lights, DepthStruct());
+                color += GetColor(ray, world, lights, PathState());
             }
-            image.pixels[line_number][x] = color / samplesPerPixelSqrt;
+            image.pixels[line_number][x] = color / SamplesPerPixelSqrt;
         }
     }
 
@@ -197,11 +267,19 @@ public:
                 const vector<shared_ptr<Quad>> &lights)
     {
         if (lights.empty())
+        {
             fmt::print(fg(fmt::color::orange),
                        "Warning: No lights registered for this scene.\n");
+            if (ShadowRays > 0)
+            {
+                ShadowRays = 0;
+                fmt::print(fg(fmt::color::orange),
+                           "Warning: Set shadow ray count to 0.\n");
+            }
+        }
 
         auto hardwareLimit = std::thread::hardware_concurrency();
-        auto threadCount = maxThreadCount == 0 ? hardwareLimit : std::min(maxThreadCount, hardwareLimit);
+        auto threadCount = MaxThreadCount == 0 ? hardwareLimit : std::min(MaxThreadCount, hardwareLimit);
         ProgressTracker progressTracker(image.height);
 
 #ifdef PPL
