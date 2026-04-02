@@ -45,7 +45,7 @@ int main()
         .MaxDiffuseDepth = 50,
         .MaxSpecularDepth = 50,
         .MaxThreadCount = 0,
-        .environmentMap = scene.environmentMap};
+        .EnvironmentMap = scene.environmentMap};
 
     auto start = steady_clock::now();
 

@@ -61,7 +61,7 @@ public:
     int SpecularSamples = 1;
     int MaxSpecularDepth = 50;
     unsigned int MaxThreadCount = 0;
-    shared_ptr<EnvironmentMap> environmentMap = nullptr;
+    shared_ptr<EnvironmentMap> EnvironmentMap = nullptr;
 
 private:
     Color GetColor(
@@ -77,7 +77,7 @@ private:
 
         HitResult hit;
         if (!world.Hit(ray, hit, 0.001, Infinity))
-            return environmentMap ? environmentMap->GetColor(ray) : Color(0, 0, 0);
+            return EnvironmentMap ? EnvironmentMap->GetColor(ray) : Color(0, 0, 0);
 
         auto emission = hit.material->Emitted(hit, 0, 0);
         auto specular = Color(0, 0, 0);
