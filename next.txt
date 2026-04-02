@@ -1,12 +1,12 @@
-- finish per type sample count
-- fix near zero wrong accumaltion
-- pixel variance test
+- The MIS weight only applies to the DirecLight component but GetColor() only returns DirecLight+IndirectLight.
+    - Currently using a hack to apply correct weights.
+    - Transforming the recursive approach to a loop might help solve the problem. 
 - IS write up
+- additive rendering
 - russian roulette 
 - sobol space renderer
 - consider different implementation of the scatter struct
-- shadow rays
-
+- try https://www.pcg-random.org/
 
 - cache inverse matrices in transform
 - triangle/face hit checked can be improved by returning early if backfacing 
