@@ -49,7 +49,7 @@ int main()
 
     auto start = steady_clock::now();
 
-    renderer.Render(image, *scene.camera, *scene.objects, *scene.lights);
+    renderer.Render(image, *scene.camera, *scene.objects, scene.lights);
 
     auto end = steady_clock::now();
     auto duration = duration_cast<seconds>(end - start);

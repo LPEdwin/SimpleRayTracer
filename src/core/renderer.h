@@ -67,7 +67,7 @@ private:
     Color GetColor(
         const Ray &ray,
         const Hittable &world,
-        const vector<shared_ptr<Quad>> &lights,
+        const vector<Quad *> &lights,
         PathState currentDepth) const
     {
         if (currentDepth.DiffuseDepth >= MaxDiffuseDepth ||
@@ -156,7 +156,7 @@ private:
                     else
                     {
                         auto w = PowerHeuristic(n_diffuse, p_bsdf, n_light, p_light);
-                        // The MIS weight w only applies to the direct light component of GetColor(...).       
+                        // The MIS weight w only applies to the direct light component of GetColor(...).
                         // Using a trick by subtracting the directLight first and adding the w weigthed directLight again.
                         // split = w*directLight + GetColor(...) - directLight
                         // TODO: Actually breaks if the direct light calculation isn't deterministic e.g. if using random fluctuations.
@@ -198,7 +198,7 @@ private:
     void RenderLine(Image &image,
                     const Camera &camera,
                     const Hittable &world,
-                    const vector<shared_ptr<Quad>> &lights,
+                    const vector<Quad *> &lights,
                     int line_number,
                     const Vector3 &pixelDelta)
     {
@@ -235,7 +235,7 @@ private:
     void RenderScanlineJittered(Image &image,
                                 const Camera &camera,
                                 const Hittable &world,
-                                const vector<shared_ptr<Quad>> &lights,
+                                const vector<Quad *> &lights,
                                 int line_number,
                                 const Vector3 &pixelDelta)
     {
@@ -264,7 +264,7 @@ public:
     void Render(Image &image,
                 const Camera &camera,
                 const Hittable &world,
-                const vector<shared_ptr<Quad>> &lights)
+                const vector<Quad *> &lights)
     {
         if (lights.empty())
         {

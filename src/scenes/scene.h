@@ -10,6 +10,6 @@ struct Scene
 {
     std::shared_ptr<Hittable> objects;
     std::shared_ptr<Camera> camera;
-    std::shared_ptr<std::vector<std::shared_ptr<Quad>>> lights = std::make_shared<std::vector<std::shared_ptr<Quad>>>();
+    std::vector<Quad *> lights;
     std::shared_ptr<EnvironmentMap> environmentMap = nullptr;
 };

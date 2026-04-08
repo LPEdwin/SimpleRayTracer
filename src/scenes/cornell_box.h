@@ -42,6 +42,6 @@ Scene CornellBox()
         .objects = BvhNode::Build(world),
         .camera = make_shared<Camera>(cam)};
 
-    scene.lights->push_back(light);
+    scene.lights.push_back(light.get());
     return scene;
 }
