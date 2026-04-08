@@ -1,7 +1,8 @@
+- IS write up
+- Implement memory arena and remove shared_pointers.
 - The MIS weight only applies to the DirecLight component but GetColor() only returns DirecLight+IndirectLight.
     - Currently using a hack to apply correct weights.
     - Transforming the recursive approach to a loop might help solve the problem. 
-- IS write up
 - additive rendering
 - russian roulette 
 - sobol space renderer
