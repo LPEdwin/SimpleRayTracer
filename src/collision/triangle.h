@@ -56,7 +56,8 @@ struct Triangle final : public Hittable
         hit.point = ray.At(t);
         hit.SetFaceNormal(ray, normal);
         hit.material = material;
-
+        hit.Object = this;
+        
         return true;
     }
 

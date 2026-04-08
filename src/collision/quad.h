@@ -62,7 +62,8 @@ public:
         hit.point = intersection;
         hit.material = mat;
         hit.SetFaceNormal(ray, normal);
-
+        hit.Object = this;
+        
         return true;
     }
 

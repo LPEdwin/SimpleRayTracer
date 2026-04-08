@@ -8,6 +8,7 @@
 #include "core/aabb.h"
 
 class Material; // Forward declaration
+class Hittable;
 
 class HitResult
 {
@@ -24,6 +25,8 @@ public:
     bool front_face;
 
     std::shared_ptr<Material> material;
+
+    const Hittable *Object = nullptr;
 
     // outward_normal must be a unit vector.
     void SetFaceNormal(const Ray &ray, const Vector3 &outward_normal)

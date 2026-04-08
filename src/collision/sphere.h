@@ -60,6 +60,8 @@ public:
         hitResult.t = root;
         hitResult.material = material;
         hitResult.SetFaceNormal(ray, outward_normal);
+        hitResult.Object = this;
+
         return true;
     }
 };

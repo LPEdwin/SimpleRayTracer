@@ -38,6 +38,7 @@ public:
             // Transform the hit record back to world space
             hit.point = transform * hit.point;
             hit.normal = transform.TransformNormal(hit.normal);
+            hit.Object = this;
             return true;
         }
         return false;

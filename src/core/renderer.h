@@ -173,7 +173,6 @@ private:
         return emission + specular + direct + indirect;
     }
 
-    // Todo: Reimplement and actually test if the correct light was hit.
     bool HitLight(const Ray &ray, const Hittable &world, const Quad &light, double maxDistance, Color &emission) const
     {
         HitResult hit;
@@ -182,8 +181,10 @@ private:
             return false;
         }
 
+        if (hit.Object != &light)
+            return false;
         emission = hit.material->Emitted(hit, 0, 0);
-        return emission != Color(0, 0, 0);
+        return true;
     }
 
     double PowerHeuristic(int nA, double pA, int nB, double pB) const
