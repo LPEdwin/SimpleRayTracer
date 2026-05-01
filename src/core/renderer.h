@@ -110,9 +110,11 @@ private:
             //   aka Light Sampling
             //   aka Next Event Estimation (NEE)
 
-            const int n_light = currentDepth.TotalDepth() == 0 ? ShadowRays : 1;
+            const int n_light = currentDepth.TotalDepth() == 0 ? ShadowRays : std::min(ShadowRays, 1);
             const int n_diffuse = currentDepth.TotalDepth() == 0 ? DiffuseSamples : 1;
-            const auto lightSampler = CreateLightSampler(lights, hit.point);
+            const auto lightSampler = n_light > 0
+                                          ? CreateLightSampler(lights, hit.point)
+                                          : nullptr;
 
             for (int i = 0; i < n_light; ++i)
             {
@@ -139,12 +141,12 @@ private:
                 auto scatterRay = Ray(hit.point, scatterDir);
                 if (!scatterDir.NearZero())
                 {
-                    auto p_light = lightSampler->PdfValue(scatterDir);
                     auto p_bsdf = scatterResult.Sampler->PdfValue(scatterDir);
                     auto f_value = hit.material->Evaluate(ray, hit, scatterRay);
                     auto nextDepth = currentDepth;
                     nextDepth.DiffuseDepth++;
                     Color lightEmission;
+
                     if (!HitLight(scatterRay, world, lights, Infinity, lightEmission))
                     {
                         // If no light was accidentally hit no MIS weights are needed.
@@ -152,6 +154,7 @@ private:
                     }
                     else
                     {
+                        auto p_light = lightSampler->PdfValue(scatterDir);
                         auto w = PowerHeuristic(n_diffuse, p_bsdf, n_light, p_light);
                         // The MIS weight w only applies to the direct light component of GetColor(...).
                         // Using a trick by subtracting the directLight first and adding the w weigthed directLight again.
@@ -172,6 +175,8 @@ private:
 
     bool HitLight(const Ray &ray, const Hittable &world, const vector<Quad *> &lights, double maxDistance, Color &emission) const
     {
+        if (lights.empty())
+            return false;
         HitResult hit;
         if (!world.Hit(ray, hit, 0.001, maxDistance))
         {
