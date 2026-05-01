@@ -106,16 +106,13 @@ private:
         else
         {
             // Direct Light
-            // aka Shadow Rays
-            // aka Light Sampling
-            // aka Next Event Estimation (NEE)
+            //   aka Shadow Rays
+            //   aka Light Sampling
+            //   aka Next Event Estimation (NEE)
 
-            // TODO: Overlapping lights aren't handled correctly.
-            // Currrently we sample the light and only need to calculate the pdf value depending on the angle.
-            // With multiple lights we have to check if another light couldn't have produced the same direction as well.
-            auto lightSampler = std::make_shared<HittableSampling>(*(lights)[0], hit.point);
             const int n_light = currentDepth.TotalDepth() == 0 ? ShadowRays : 1;
             const int n_diffuse = currentDepth.TotalDepth() == 0 ? DiffuseSamples : 1;
+            const auto lightSampler = CreateLightSampler(lights, hit.point);
 
             for (int i = 0; i < n_light; ++i)
             {
@@ -127,7 +124,7 @@ private:
                 auto lightRay = Ray(hit.point, lightDir);
 
                 Color lightEmission;
-                if (HitLight(lightRay, world, *(lights.at(0)), Infinity, lightEmission))
+                if (HitLight(lightRay, world, lights, Infinity, lightEmission))
                 {
                     auto f_value = hit.material->Evaluate(ray, hit, lightRay);
                     direct += w * (att * f_value * lightEmission) / (n_light * p_light);
@@ -148,7 +145,7 @@ private:
                     auto nextDepth = currentDepth;
                     nextDepth.DiffuseDepth++;
                     Color lightEmission;
-                    if (!HitLight(scatterRay, world, *(lights.at(0)), Infinity, lightEmission))
+                    if (!HitLight(scatterRay, world, lights, Infinity, lightEmission))
                     {
                         // If no light was accidentally hit no MIS weights are needed.
                         indirect += (att * f_value * GetColor(scatterRay, world, lights, nextDepth)) / (n_diffuse * p_bsdf);
@@ -173,7 +170,7 @@ private:
         return emission + specular + direct + indirect;
     }
 
-    bool HitLight(const Ray &ray, const Hittable &world, const Quad &light, double maxDistance, Color &emission) const
+    bool HitLight(const Ray &ray, const Hittable &world, const vector<Quad *> &lights, double maxDistance, Color &emission) const
     {
         HitResult hit;
         if (!world.Hit(ray, hit, 0.001, maxDistance))
@@ -181,10 +178,15 @@ private:
             return false;
         }
 
-        if (hit.Object != &light)
-            return false;
-        emission = hit.material->Emitted(hit, 0, 0);
-        return true;
+        for (const auto &l : lights)
+        {
+            if (hit.Object == l)
+            {
+                emission = hit.material->Emitted(hit, 0, 0);
+                return true;
+            }
+        }
+        return false;
     }
 
     double PowerHeuristic(int nA, double pA, int nB, double pB) const

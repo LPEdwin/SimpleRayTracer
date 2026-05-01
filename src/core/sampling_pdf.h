@@ -4,6 +4,7 @@
 #include <cmath>
 #include "vector3.h"
 #include "onb.h"
+#include "collision/quad.h"
 
 class SamplingPdf
 {
@@ -87,10 +88,11 @@ private:
     Point3 origin;
 };
 
-class MixtureSampling : public SamplingPdf
+template <typename tptr>
+class MixtureSamplingT : public SamplingPdf
 {
 public:
-    MixtureSampling(std::vector<std::shared_ptr<SamplingPdf>> samplers)
+    MixtureSamplingT(std::vector<tptr> samplers)
         : samplers(std::move(samplers))
     {
         if (this->samplers.empty())
@@ -111,5 +113,16 @@ public:
     }
 
 private:
-    std::vector<std::shared_ptr<SamplingPdf>> samplers;
+    std::vector<tptr> samplers;
 };
+
+using MixtureSamplingSafe = MixtureSamplingT<std::shared_ptr<SamplingPdf>>;
+using MixtureSampling = MixtureSamplingT<SamplingPdf *>;
+
+std::shared_ptr<MixtureSamplingSafe> CreateLightSampler(const std::vector<Quad *> &lights, const Point3 &origin)
+{
+    std::vector<std::shared_ptr<SamplingPdf>> samplers;
+    for (const auto &l : lights)
+        samplers.push_back(std::make_shared<HittableSampling>(*l, origin));
+    return std::make_shared<MixtureSamplingSafe>(samplers);
+}
