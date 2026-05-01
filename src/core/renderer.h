@@ -110,6 +110,7 @@ private:
             //   aka Light Sampling
             //   aka Next Event Estimation (NEE)
 
+            // ShadowRays was set 0 if no lights are registered.
             const int n_light = currentDepth.TotalDepth() == 0 ? ShadowRays : std::min(ShadowRays, 1);
             const int n_diffuse = currentDepth.TotalDepth() == 0 ? DiffuseSamples : 1;
             const auto lightSampler = n_light > 0
