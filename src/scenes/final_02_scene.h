@@ -65,7 +65,7 @@ Scene FinalScene02()
         .camera = make_shared<Camera>(cam),
     };
 
-    scene.lights->push_back(quadLight);
+    scene.lights.push_back(quadLight.get());
 
     return scene;
 }
