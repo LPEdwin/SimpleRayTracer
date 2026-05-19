@@ -72,11 +72,11 @@ private:
         const Ray &ray,
         const Hittable &world,
         const vector<Quad *> &lights,
-        PathState currentDepth) const
+        PathState currentPath) const
     {
-        if (currentDepth.DiffuseDepth >= MaxDiffuseDepth ||
-            currentDepth.SpecularDepth >= MaxSpecularDepth ||
-            currentDepth.TotalDepth() >= MaxDepth)
+        if (currentPath.DiffuseDepth >= MaxDiffuseDepth ||
+            currentPath.SpecularDepth >= MaxSpecularDepth ||
+            currentPath.TotalDepth() >= MaxDepth)
             return Color(0, 0, 0);
 
         HitResult hit;
@@ -85,14 +85,14 @@ private:
 
         auto emission = hit.material->Emitted(hit, 0, 0);
         // If a light is hit here, this adds to the direct light integral and needs to be weighted by MIS.
-        if (currentDepth.TotalDepth() > 0 &&
-            !currentDepth.IsSpecular &&
+        if (currentPath.TotalDepth() > 0 &&
+            !currentPath.IsSpecular &&
             std::any_of(lights.begin(), lights.end(), [hit](const Quad *l)
                         { return hit.Object == l; }))
         {
-            const int n_light = currentDepth.TotalDepth() == 1 ? ShadowRays : std::min(ShadowRays, 1);
-            const int n_diffuse = currentDepth.TotalDepth() == 1 ? DiffuseSamples : 1;
-            emission *= PowerHeuristic(n_diffuse, currentDepth.p_bsdf, n_light, currentDepth.p_light);
+            const int n_light = currentPath.TotalDepth() == 1 ? ShadowRays : std::min(ShadowRays, 1);
+            const int n_diffuse = currentPath.TotalDepth() == 1 ? DiffuseSamples : 1;
+            emission *= PowerHeuristic(n_diffuse, currentPath.p_bsdf, n_light, currentPath.p_light);
         }
         auto specular = Color(0, 0, 0);
         auto direct = Color(0, 0, 0);
@@ -108,13 +108,13 @@ private:
         {
             // Specular path
             auto ray_out = scatterResult.RayOut;
-            auto nextDepth = currentDepth;
-            nextDepth.SpecularDepth++;
-            nextDepth.IsSpecular = true;
-            auto samples = currentDepth.TotalDepth() == 0 ? SpecularSamples : 1;
+            auto nextPath = currentPath;
+            nextPath.SpecularDepth++;
+            nextPath.IsSpecular = true;
+            auto samples = currentPath.TotalDepth() == 0 ? SpecularSamples : 1;
             for (int i = 0; i < samples; ++i)
             {
-                specular += (att * GetColor(ray_out, world, lights, nextDepth));
+                specular += (att * GetColor(ray_out, world, lights, nextPath));
             }
             specular /= samples;
         }
@@ -126,8 +126,8 @@ private:
             //   aka Next Event Estimation (NEE)
 
             // ShadowRays was set 0 if no lights are registered.
-            const int n_light = currentDepth.TotalDepth() == 0 ? ShadowRays : std::min(ShadowRays, 1);
-            const int n_diffuse = currentDepth.TotalDepth() == 0 ? DiffuseSamples : 1;
+            const int n_light = currentPath.TotalDepth() == 0 ? ShadowRays : std::min(ShadowRays, 1);
+            const int n_diffuse = currentPath.TotalDepth() == 0 ? DiffuseSamples : 1;
             const auto lightSampler = n_light > 0
                                           ? CreateLightSampler(lights, hit.point)
                                           : nullptr;
@@ -160,13 +160,13 @@ private:
                     auto p_bsdf = scatterResult.Sampler->PdfValue(scatterDir);
                     auto p_light = lightSampler ? lightSampler->PdfValue(scatterDir) : 0.0;
                     auto f_value = hit.material->Evaluate(ray, hit, scatterRay);
-                    auto nextDepth = currentDepth;
-                    nextDepth.IsSpecular = false;
-                    nextDepth.DiffuseDepth++;
-                    nextDepth.p_bsdf = p_bsdf;
-                    nextDepth.p_light = p_light;
+                    auto nextPath = currentPath;
+                    nextPath.IsSpecular = false;
+                    nextPath.DiffuseDepth++;
+                    nextPath.p_bsdf = p_bsdf;
+                    nextPath.p_light = p_light;
 
-                    indirect += (att * f_value * GetColor(scatterRay, world, lights, nextDepth)) / (n_diffuse * p_bsdf);
+                    indirect += (att * f_value * GetColor(scatterRay, world, lights, nextPath)) / (n_diffuse * p_bsdf);
                 }
                 else if (retries++ < 10)
                 {
