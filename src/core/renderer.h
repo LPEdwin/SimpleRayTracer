@@ -48,6 +48,10 @@ struct PathState
     {
         return DiffuseDepth + SpecularDepth;
     }
+
+    double p_light = 1.0;
+    double p_bsdf = 1.0;
+    bool IsSpecular = false;
 };
 
 class Renderer
@@ -80,6 +84,16 @@ private:
             return EnvironmentMap ? EnvironmentMap->GetColor(ray) : Color(0, 0, 0);
 
         auto emission = hit.material->Emitted(hit, 0, 0);
+        // If a light is hit here, this adds to the direct light integral and needs to be weighted by MIS.
+        if (currentDepth.TotalDepth() > 0 &&
+            !currentDepth.IsSpecular &&
+            std::any_of(lights.begin(), lights.end(), [hit](const Quad *l)
+                        { return hit.Object == l; }))
+        {
+            const int n_light = currentDepth.TotalDepth() == 1 ? ShadowRays : std::min(ShadowRays, 1);
+            const int n_diffuse = currentDepth.TotalDepth() == 1 ? DiffuseSamples : 1;
+            emission *= PowerHeuristic(n_diffuse, currentDepth.p_bsdf, n_light, currentDepth.p_light);
+        }
         auto specular = Color(0, 0, 0);
         auto direct = Color(0, 0, 0);
         auto indirect = Color(0, 0, 0);
@@ -96,6 +110,7 @@ private:
             auto ray_out = scatterResult.RayOut;
             auto nextDepth = currentDepth;
             nextDepth.SpecularDepth++;
+            nextDepth.IsSpecular = true;
             auto samples = currentDepth.TotalDepth() == 0 ? SpecularSamples : 1;
             for (int i = 0; i < samples; ++i)
             {
@@ -143,27 +158,15 @@ private:
                 if (!scatterDir.NearZero())
                 {
                     auto p_bsdf = scatterResult.Sampler->PdfValue(scatterDir);
+                    auto p_light = lightSampler ? lightSampler->PdfValue(scatterDir) : 0.0;
                     auto f_value = hit.material->Evaluate(ray, hit, scatterRay);
                     auto nextDepth = currentDepth;
+                    nextDepth.IsSpecular = false;
                     nextDepth.DiffuseDepth++;
-                    Color lightEmission;
+                    nextDepth.p_bsdf = p_bsdf;
+                    nextDepth.p_light = p_light;
 
-                    if (!HitLight(scatterRay, world, lights, Infinity, lightEmission))
-                    {
-                        // If no light was accidentally hit no MIS weights are needed.
-                        indirect += (att * f_value * GetColor(scatterRay, world, lights, nextDepth)) / (n_diffuse * p_bsdf);
-                    }
-                    else
-                    {
-                        auto p_light = lightSampler->PdfValue(scatterDir);
-                        auto w = PowerHeuristic(n_diffuse, p_bsdf, n_light, p_light);
-                        // The MIS weight w only applies to the direct light component of GetColor(...).
-                        // Using a trick by subtracting the directLight first and adding the w weigthed directLight again.
-                        // split = w*directLight + GetColor(...) - directLight
-                        // TODO: Actually breaks if the direct light calculation isn't deterministic e.g. if using random fluctuations.
-                        auto split = (w - 1) * lightEmission + GetColor(scatterRay, world, lights, nextDepth);
-                        indirect += (att * f_value * split) / (n_diffuse * p_bsdf);
-                    }
+                    indirect += (att * f_value * GetColor(scatterRay, world, lights, nextDepth)) / (n_diffuse * p_bsdf);
                 }
                 else if (retries++ < 10)
                 {
